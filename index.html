@@ -106,11 +106,17 @@
             color: #999;
         }
         
+        .sensor-subvalue {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
         .temp { 
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
             color: white; 
         }
-        .temp .sensor-label, .temp .sensor-unit { 
+        .temp .sensor-label, .temp .sensor-unit, .temp .sensor-subvalue { 
             color: rgba(255,255,255,0.8); 
         }
         .temp .sensor-value { 
@@ -132,7 +138,7 @@
             background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); 
             color: white; 
         }
-        .rpm .sensor-label, .rpm .sensor-unit { 
+        .rpm .sensor-label, .rpm .sensor-unit, .rpm .sensor-subvalue { 
             color: rgba(255,255,255,0.8); 
         }
         .rpm .sensor-value { 
@@ -234,10 +240,11 @@
             </div>
             
             <div class="sensor-card rpm">
-                <div class="sensor-icon">⚙️</div>
-                <div class="sensor-label">Velocidad</div>
-                <div class="sensor-value" id="rpm-value">--</div>
-                <div class="sensor-unit">RPM</div>
+                <div class="sensor-icon">🌬️</div>
+                <div class="sensor-label">Velocidad Viento</div>
+                <div class="sensor-value" id="wind-value">--</div>
+                <div class="sensor-unit">km/h</div>
+                <div class="sensor-subvalue" id="rpm-value">-- RPM</div>
             </div>
             
             <div class="sensor-card proximity">
@@ -265,6 +272,18 @@
             // URL de tu Feature Layer en ArcGIS Online
             const featureLayerUrl = "https://services4.arcgis.com/RZghiOOKLo2VeJGO/arcgis/rest/services/DAV_MObile_TAble/FeatureServer/0";
             
+            // Configuración del anemómetro
+            // CAMBIA ESTE VALOR según el diámetro de tu anemómetro en METROS
+            const ANEMOMETER_DIAMETER = 0.13; // 10 cm = 0.10 metros (AJUSTA ESTE VALOR)
+            const CIRCUMFERENCE = Math.PI * ANEMOMETER_DIAMETER; // Circunferencia en metros
+            
+            // Función para convertir RPM a km/h
+            function rpmToKmh(rpm) {
+                // Velocidad = (RPM × Circunferencia × 60) / 1000
+                // Circunferencia en metros, resultado en km/h
+                return (rpm * CIRCUMFERENCE * 60) / 1000;
+            }
+            
             const featureLayer = new FeatureLayer({
                 url: featureLayerUrl
             });
@@ -283,13 +302,26 @@
                             // Último registro (más reciente)
                             const latest = result.features[0].attributes;
                             
-                            // Actualizar valores
+                            // Actualizar temperatura
                             document.getElementById('temp-value').textContent = 
                                 latest.temperatura !== null ? latest.temperatura.toFixed(1) : '--';
+                            
+                            // Actualizar humedad
                             document.getElementById('humidity-value').textContent = 
                                 latest.humedad !== null ? latest.humedad.toFixed(1) : '--';
-                            document.getElementById('rpm-value').textContent = 
-                                latest.rpm !== null ? Math.round(latest.rpm) : '--';
+                            
+                            // Actualizar RPM y convertir a km/h
+                            if (latest.rpm !== null) {
+                                const rpm = latest.rpm;
+                                const kmh = rpmToKmh(rpm);
+                                document.getElementById('wind-value').textContent = kmh.toFixed(2);
+                                document.getElementById('rpm-value').textContent = Math.round(rpm) + ' RPM';
+                            } else {
+                                document.getElementById('wind-value').textContent = '--';
+                                document.getElementById('rpm-value').textContent = '-- RPM';
+                            }
+                            
+                            // Actualizar proximidad
                             document.getElementById('prox-value').textContent = 
                                 latest.proximidad === 1 ? 'Detectado' : 'Libre';
                             
@@ -297,14 +329,14 @@
                             let historyHTML = '';
                             result.features.forEach(function(feature, index) {
                                 const attr = feature.attributes;
-                                const time = new Date().toLocaleTimeString('es-ES');
+                                const kmh = attr.rpm !== null ? rpmToKmh(attr.rpm).toFixed(2) : '--';
                                 historyHTML += `
                                     <div class="history-item">
                                         <div>
                                             <strong>#${index + 1}</strong> - 
                                             Temp: ${attr.temperatura !== null ? attr.temperatura.toFixed(1) : '--'}°C | 
                                             Hum: ${attr.humedad !== null ? attr.humedad.toFixed(1) : '--'}% | 
-                                            RPM: ${attr.rpm !== null ? Math.round(attr.rpm) : '--'}
+                                            Viento: ${kmh} km/h
                                         </div>
                                         <div class="history-time">Registro ${index + 1}</div>
                                     </div>
@@ -340,8 +372,8 @@
             // Cargar datos inicialmente
             updateSensorData();
             
-            // Actualizar cada 10 segundos
-            setInterval(updateSensorData, 10000);
+            // Actualizar cada 6 segundos
+            setInterval(updateSensorData, 6000);
         });
     </script>
 </body>
