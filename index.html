@@ -75,11 +75,10 @@
                 </h2>
                 <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">SAN NICOLÁS</h1>
             </div>
-        </div>
-        <div class="text-right mt-6 md:mt-0">
-            <div class="flex items-center justify-end gap-2 text-xs mb-1">
-                <span class="live-dot"></span> <span class="text-emerald-400 font-semibold tracking-widest">SISTEMA EN
-                    VIVO</span>
+        </di        <div class="text-right mt-6 md:mt-0">
+            <div class="flex items-center justify-end gap-2 text-xs mb-1" id="status-indicator">
+                <span class="live-dot" id="live-dot"></span> 
+                <span class="text-emerald-400 font-semibold tracking-widest" id="status-text">SISTEMA EN VIVO</span>
             </div>
             <h3 class="text-4xl font-black text-gradient italic">DAV Mobile Station</h3>
         </div>
@@ -109,41 +108,43 @@
             </div>
         </section>
 
-        <section class="glass-card p-8 animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+        <section class="glass-card p-4 md:p-8 animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
                     <h3 class="text-2xl font-bold">Tendencias Históricas</h3>
-                    <p class="text-slate-400 text-sm">Registros almacenados desde el 13 de Marzo</p>
+                    <p class="text-slate-400 text-sm" id="history-subtitle">Cargando fecha de inicio...</p>
                 </div>
-                <div class="flex flex-col items-end gap-2">
+                <div class="flex flex-col items-end gap-2 w-full md:w-auto">
                     <div class="flex items-center gap-2">
                         <label for="history-date" class="text-xs text-slate-400 font-semibold uppercase">Fecha:</label>
                         <input type="date" id="history-date"
                             class="px-2 py-1 rounded-md bg-slate-800 text-xs text-white border border-slate-700 outline-none focus:border-sky-500"
                             onchange="updateHistory(currentHistoryField)">
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
                         <button onclick="updateHistory('temperatura')"
-                            class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600"
-                            id="btn-temperatura">TEMPERATURA</button>
+                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
+                            id="btn-temperatura">TEMP</button>
                         <button onclick="updateHistory('humedad')"
-                            class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600"
-                            id="btn-humedad">HUMEDAD</button>
+                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
+                            id="btn-humedad">HUM</button>
                         <button onclick="updateHistory('velocidad_viento')"
-                            class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600"
+                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
                             id="btn-velocidad_viento">VIENTO</button>
                     </div>
                 </div>
             </div>
-            <div id="history-chart" class="w-full h-[400px]"></div>
+            <div id="history-chart" class="w-full h-[300px] md:h-[400px]"></div>
         </section>
     </main>
 
     <footer class="text-center py-12 text-slate-500 text-xs font-light tracking-[0.2em] uppercase">
-        Liceo de Excelencia Polivalente San Nicolás • 2026 • © 3F GeoGo
+        Liceo de Excelencia Polivalente San Nicolás • <span id="current-year">2026</span> • © 3F GeoGo
     </footer>
 
     <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
         // CONFIGURACIÓN DE DATA
         const ARCGIS_URL = "https://services4.arcgis.com/RZghiOOKLo2VeJGO/arcgis/rest/services/Estacion_Metereologica/FeatureServer/0/query";
 
@@ -151,57 +152,123 @@
         const windGauge = echarts.init(document.getElementById('gauge-wind'), 'dark');
         const historyChart = echarts.init(document.getElementById('history-chart'), 'dark');
 
+        // Variables Globales Lógica
+        let lastDataTime = Date.now();
+        let isOffline = false;
+        const OFFLINE_THRESHOLD_MS = 30000; // 30 segundos
+        const GAP_THRESHOLD_MS = 120000; // 2 minutos máximo entre puntos
+
+        // Cálculo Punto de Rocío (Fórmula Magnus)
+        function calculateDewPoint(temp, hum) {
+            if(temp == null || hum == null || hum === 0) return "--";
+            const a = 17.625;
+            const b = 243.04;
+            const alpha = Math.log(hum / 100) + (a * temp) / (b + temp);
+            const dewPoint = (b * alpha) / (a - alpha);
+            return dewPoint.toFixed(1);
+        }
+
+        // Chequeo de conexión Offline
+        setInterval(() => {
+            const now = Date.now();
+            const dot = document.getElementById('live-dot');
+            const text = document.getElementById('status-text');
+            
+            if (now - lastDataTime > OFFLINE_THRESHOLD_MS) {
+                if(!isOffline){
+                    isOffline = true;
+                    dot.style.backgroundColor = '#ef4444'; // Red
+                    dot.style.boxShadow = '0 0 10px #ef4444';
+                    dot.style.animation = 'none';
+                    text.textContent = 'OFFLINE';
+                    text.classList.replace('text-emerald-400', 'text-red-400');
+                }
+            } else {
+                if(isOffline){
+                    isOffline = false;
+                    dot.style.backgroundColor = '#10b981'; // Green
+                    dot.style.boxShadow = '0 0 10px #10b981';
+                    dot.style.animation = 'pulse 2s infinite';
+                    text.textContent = 'SISTEMA EN VIVO';
+                    text.classList.replace('text-red-400', 'text-emerald-400');
+                }
+            }
+        }, 1000);
+
+        // Fetch First Date
+        async function fetchFirstDate() {
+            try {
+                const params = "?where=1%3D1&outFields=fecha_lectura&orderByFields=fecha_lectura+ASC&resultRecordCount=1&f=pjson";
+                const response = await fetch(ARCGIS_URL + params);
+                const data = await response.json();
+                
+                if(data.features && data.features.length > 0){
+                    const timestamp = data.features[0].attributes.fecha_lectura;
+                    const dateObj = new Date(timestamp);
+                    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+                    document.getElementById('history-subtitle').textContent = `Registros almacenados desde ${dateObj.toLocaleDateString('es-ES', options)}`;
+                } else {
+                    document.getElementById('history-subtitle').textContent = "Sin registros históricos";
+                }
+            } catch (e) {
+                console.error("Error obteniendo primera fecha", e);
+            }
+        }
+        fetchFirstDate();
+
         // Función para obtener datos en tiempo real
         async function fetchRealtime() {
             const params = "?where=1%3D1&outFields=*&orderByFields=fecha_lectura+DESC&resultRecordCount=1&f=pjson";
             try {
                 const response = await fetch(ARCGIS_URL + params);
                 const data = await response.json();
-                const latest = data.features[0].attributes;
+                
+                if(data.features && data.features.length > 0){
+                    const latest = data.features[0].attributes;
+                    lastDataTime = Date.now();
 
-                // Actualizar UI
-                document.getElementById('temp-val').innerText = `${latest.temperatura.toFixed(1)}°C`;
-                document.getElementById('hum-val').innerText = `${latest.humedad.toFixed(0)}%`;
-                document.getElementById('temp-bar').style.width = `${(latest.temperatura / 50) * 100}%`;
+                    // Actualizar UI
+                    document.getElementById('temp-val').innerText = `${latest.temperatura.toFixed(1)}°C`;
+                    document.getElementById('hum-val').innerText = `${latest.humedad.toFixed(0)}%`;
+                    document.getElementById('temp-bar').style.width = `${(latest.temperatura / 50) * 100}%`;
+                    
+                    // Actualizar Punto de Rocío
+                    document.getElementById('dew-val').innerText = calculateDewPoint(latest.temperatura, latest.humedad);
 
-                // Actualizar Gauge Viento
-                windGauge.setOption({
-                    backgroundColor: 'transparent',
-                    series: [{
-                        type: 'gauge', min: 0, max: 40, splitNumber: 8,
-                        axisLine: { lineStyle: { width: 6, color: [[1, 'rgba(56, 189, 248, 0.2)']] } },
-                        pointer: { width: 4, itemStyle: { color: '#38bdf8' } },
-                        detail: { show: false },
-                        data: [{ value: latest.velocidad_viento.toFixed(1) }]
-                    }]
-                });
+                    // Actualizar Gauge Viento
+                    windGauge.setOption({
+                        backgroundColor: 'transparent',
+                        series: [{
+                            type: 'gauge', min: 0, max: 40, splitNumber: 8,
+                            axisLine: { lineStyle: { width: 6, color: [[1, 'rgba(56, 189, 248, 0.2)']] } },
+                            pointer: { width: 4, itemStyle: { color: '#38bdf8' } },
+                            detail: { show: false },
+                            data: [{ value: latest.velocidad_viento.toFixed(1) }]
+                        }]
+                    });
+                }
             } catch (e) { console.error("Error cargando tiempo real", e); }
         }
 
         let currentHistoryField = 'temperatura';
-
-        // Set default date to today
         document.getElementById('history-date').valueAsDate = new Date();
 
         // Función para obtener históricos
         async function updateHistory(campo) {
             currentHistoryField = campo;
 
-            // Highlight active button
             ['temperatura', 'humedad', 'velocidad_viento'].forEach(c => {
                 document.getElementById(`btn-${c}`).classList.remove('bg-slate-600', 'border-sky-500');
             });
             document.getElementById(`btn-${campo}`).classList.add('bg-slate-600', 'border-sky-500');
 
             const dateInput = document.getElementById('history-date').value;
-            let dateFilter = "1=1"; // Default
+            let dateFilter = "1=1"; 
 
             if (dateInput) {
-                // Convert input date (YYYY-MM-DD) to string range for the API
-                const dateParts = dateInput.split('-'); // [YYYY, MM, DD]
+                const dateParts = dateInput.split('-');
                 const startDateStr = `${dateParts[0]}-${dateParts[1]}-${dateParts[2]} 00:00:00`;
                 const endDateStr = `${dateParts[0]}-${dateParts[1]}-${dateParts[2]} 23:59:59`;
-
                 dateFilter = `fecha_lectura >= '${startDateStr}' AND fecha_lectura <= '${endDateStr}'`;
             }
 
@@ -218,22 +285,58 @@
                     return;
                 }
 
-                const xData = data.features.map(f => new Date(f.attributes.fecha_lectura).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-                const yData = data.features.map(f => f.attributes[campo] || 0);
+                let processedData = [];
+                let features = data.features;
+
+                for (let i = 0; i < features.length; i++) {
+                    let currentTimestamp = features[i].attributes.fecha_lectura;
+                    let currentValue = features[i].attributes[campo] || 0;
+                    
+                    // Agregar dato a cero entre medias si hay mucho espacio (falso point)
+                    if (i > 0) {
+                        let prevTimestamp = features[i - 1].attributes.fecha_lectura;
+                        if (currentTimestamp - prevTimestamp > GAP_THRESHOLD_MS) {
+                            processedData.push([new Date(prevTimestamp + 1000), 0]);
+                            processedData.push([new Date(currentTimestamp - 1000), 0]);
+                        }
+                    }
+                    processedData.push([new Date(currentTimestamp), currentValue]);
+                }
 
                 let lineColor, areaColorInfo;
                 if (campo === 'temperatura') { lineColor = '#f97316'; areaColorInfo = '#f97316'; }
                 else if (campo === 'humedad') { lineColor = '#38bdf8'; areaColorInfo = '#38bdf8'; }
-                else { lineColor = '#10b981'; areaColorInfo = '#10b981'; } // Viento verde
+                else { lineColor = '#10b981'; areaColorInfo = '#10b981'; }
 
                 historyChart.setOption({
-                    title: { show: false }, // Hide possible "no data" message
+                    title: { show: false }, 
                     backgroundColor: 'transparent',
-                    tooltip: { trigger: 'axis' },
-                    xAxis: { type: 'category', data: xData, axisLine: { lineStyle: { color: '#475569' } } },
-                    yAxis: { type: 'value', splitLine: { lineStyle: { color: '#1e293b' } }, name: campo === 'temperatura' ? '°C' : campo === 'humedad' ? '%' : 'km/h' },
+                    tooltip: { 
+                        trigger: 'axis',
+                        formatter: function (params) {
+                            let dt = params[0].value[0];
+                            let val = params[0].value[1];
+                            let timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            return `${timeStr}<br/><b>${val}</b>`;
+                        }
+                    },
+                    grid: { containLabel: true, left: '5%', right: '5%', bottom: '15%' },
+                    dataZoom: [
+                        { type: 'inside', start: 0, end: 100 },
+                        { type: 'slider', show: true, bottom: 0, textStyle: { color: '#94a3b8' } }
+                    ],
+                    xAxis: { 
+                        type: 'time', 
+                        axisLine: { lineStyle: { color: '#475569' } },
+                        axisLabel: { formatter: '{HH}:{mm}' }
+                    },
+                    yAxis: { 
+                        type: 'value', 
+                        splitLine: { lineStyle: { color: '#1e293b' } }, 
+                        name: campo === 'temperatura' ? '°C' : campo === 'humedad' ? '%' : 'km/h' 
+                    },
                     series: [{
-                        data: yData,
+                        data: processedData,
                         type: 'line',
                         smooth: true,
                         symbol: 'none',
@@ -245,7 +348,7 @@
                         },
                         lineStyle: { width: 3, color: lineColor }
                     }]
-                }, true); // true para limpiar opciones previas
+                }, true);
             } catch (e) { console.error("Error cargando históricos", e); }
         }
 
@@ -260,5 +363,4 @@
         });
     </script>
 </body>
-
 </html>
