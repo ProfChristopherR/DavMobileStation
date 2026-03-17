@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,38 +13,38 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
+
         .container {
             max-width: 600px;
             margin: 0 auto;
         }
-        
+
         .header {
             text-align: center;
             color: white;
             margin-bottom: 30px;
         }
-        
+
         .header h1 {
             font-size: 28px;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
-        
+
         .header p {
             font-size: 14px;
             opacity: 0.9;
         }
-        
+
         .status {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
             padding: 10px 20px;
             border-radius: 20px;
@@ -51,41 +52,48 @@
             margin-bottom: 20px;
             font-size: 14px;
         }
-        
+
         .status.loading {
             animation: pulse 1.5s infinite;
         }
-        
+
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
         }
-        
+
         .sensors-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin-bottom: 20px;
         }
-        
+
         .sensor-card {
             background: white;
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             text-align: center;
             transition: transform 0.3s ease;
         }
-        
+
         .sensor-card:hover {
             transform: translateY(-5px);
         }
-        
+
         .sensor-icon {
             font-size: 40px;
             margin-bottom: 10px;
         }
-        
+
         .sensor-label {
             font-size: 12px;
             color: #666;
@@ -93,82 +101,96 @@
             letter-spacing: 1px;
             margin-bottom: 10px;
         }
-        
+
         .sensor-value {
             font-size: 32px;
             font-weight: bold;
             color: #333;
             margin-bottom: 5px;
         }
-        
+
         .sensor-unit {
             font-size: 14px;
             color: #999;
         }
-        
+
         .sensor-subvalue {
             font-size: 12px;
             color: #999;
             margin-top: 5px;
         }
-        
-        .temp { 
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
-            color: white; 
+
+        .temp {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
         }
-        .temp .sensor-label, .temp .sensor-unit, .temp .sensor-subvalue { 
-            color: rgba(255,255,255,0.8); 
+
+        .temp .sensor-label,
+        .temp .sensor-unit,
+        .temp .sensor-subvalue {
+            color: rgba(255, 255, 255, 0.8);
         }
-        .temp .sensor-value { 
-            color: white; 
+
+        .temp .sensor-value {
+            color: white;
         }
-        
-        .humidity { 
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
-            color: white; 
+
+        .humidity {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
         }
-        .humidity .sensor-label, .humidity .sensor-unit { 
-            color: rgba(255,255,255,0.8); 
+
+        .humidity .sensor-label,
+        .humidity .sensor-unit {
+            color: rgba(255, 255, 255, 0.8);
         }
-        .humidity .sensor-value { 
-            color: white; 
+
+        .humidity .sensor-value {
+            color: white;
         }
-        
-        .rpm { 
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); 
-            color: white; 
+
+        .rpm {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
         }
-        .rpm .sensor-label, .rpm .sensor-unit, .rpm .sensor-subvalue { 
-            color: rgba(255,255,255,0.8); 
+
+        .rpm .sensor-label,
+        .rpm .sensor-unit,
+        .rpm .sensor-subvalue {
+            color: rgba(255, 255, 255, 0.8);
         }
-        .rpm .sensor-value { 
-            color: white; 
+
+        .rpm .sensor-value {
+            color: white;
         }
-        
-        .proximity { 
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); 
-            color: white; 
+
+        .proximity {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
         }
-        .proximity .sensor-label, .proximity .sensor-unit { 
-            color: rgba(255,255,255,0.8); 
+
+        .proximity .sensor-label,
+        .proximity .sensor-unit {
+            color: rgba(255, 255, 255, 0.8);
         }
-        .proximity .sensor-value { 
-            color: white; 
+
+        .proximity .sensor-value {
+            color: white;
         }
-        
+
         .history {
             background: white;
             border-radius: 20px;
             padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
-        
+
         .history h2 {
             font-size: 18px;
             margin-bottom: 15px;
             color: #333;
         }
-        
+
         .history-item {
             padding: 12px;
             border-bottom: 1px solid #eee;
@@ -177,16 +199,16 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .history-item:last-child {
             border-bottom: none;
         }
-        
+
         .history-time {
             color: #999;
             font-size: 11px;
         }
-        
+
         .error {
             background: #ff4757;
             color: white;
@@ -195,35 +217,36 @@
             text-align: center;
             margin-bottom: 20px;
         }
-        
+
         @media (max-width: 480px) {
             .sensors-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .header h1 {
                 font-size: 24px;
             }
-            
+
             body {
                 padding: 10px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>🌡️ Dav Mobile Station</h1>
             <p>Sistema de Monitoreo en Tiempo Real</p>
         </div>
-        
+
         <div class="status loading" id="status">
             🔄 Cargando datos...
         </div>
-        
+
         <div id="error-container"></div>
-        
+
         <div class="sensors-grid">
             <div class="sensor-card temp">
                 <div class="sensor-icon">🌡️</div>
@@ -231,14 +254,14 @@
                 <div class="sensor-value" id="temp-value">--</div>
                 <div class="sensor-unit">°C</div>
             </div>
-            
+
             <div class="sensor-card humidity">
                 <div class="sensor-icon">💧</div>
                 <div class="sensor-label">Humedad</div>
                 <div class="sensor-value" id="humidity-value">--</div>
                 <div class="sensor-unit">%</div>
             </div>
-            
+
             <div class="sensor-card rpm">
                 <div class="sensor-icon">🌬️</div>
                 <div class="sensor-label">Velocidad Viento</div>
@@ -246,7 +269,7 @@
                 <div class="sensor-unit">km/h</div>
                 <div class="sensor-subvalue" id="rpm-value">-- RPM</div>
             </div>
-            
+
             <div class="sensor-card proximity">
                 <div class="sensor-icon">📍</div>
                 <div class="sensor-label">Proximidad</div>
@@ -254,7 +277,7 @@
                 <div class="sensor-unit">Estado</div>
             </div>
         </div>
-        
+
         <div class="history">
             <h2>📊 Últimos 5 Registros</h2>
             <div id="history-list">
@@ -267,27 +290,27 @@
         require([
             "esri/layers/FeatureLayer",
             "esri/rest/support/Query"
-        ], function(FeatureLayer, Query) {
-            
+        ], function (FeatureLayer, Query) {
+
             // URL de tu Feature Layer en ArcGIS Online
             const featureLayerUrl = "https://services4.arcgis.com/RZghiOOKLo2VeJGO/arcgis/rest/services/DAV_MObile_TAble/FeatureServer/0";
-            
+
             // Configuración del anemómetro
             // CAMBIA ESTE VALOR según el diámetro de tu anemómetro en METROS
             const ANEMOMETER_DIAMETER = 0.13; // 10 cm = 0.10 metros (AJUSTA ESTE VALOR)
             const CIRCUMFERENCE = Math.PI * ANEMOMETER_DIAMETER; // Circunferencia en metros
-            
+
             // Función para convertir RPM a km/h
             function rpmToKmh(rpm) {
                 // Velocidad = (RPM × Circunferencia × 60) / 1000
                 // Circunferencia en metros, resultado en km/h
                 return (rpm * CIRCUMFERENCE * 60) / 1000;
             }
-            
+
             const featureLayer = new FeatureLayer({
                 url: featureLayerUrl
             });
-            
+
             function updateSensorData() {
                 const query = new Query();
                 query.where = "1=1";
@@ -295,21 +318,21 @@
                 query.orderByFields = ["OBJECTID DESC"];
                 query.num = 5;
                 query.returnGeometry = false;
-                
+
                 featureLayer.queryFeatures(query)
-                    .then(function(result) {
+                    .then(function (result) {
                         if (result.features.length > 0) {
                             // Último registro (más reciente)
                             const latest = result.features[0].attributes;
-                            
+
                             // Actualizar temperatura
-                            document.getElementById('temp-value').textContent = 
+                            document.getElementById('temp-value').textContent =
                                 latest.temperatura !== null ? latest.temperatura.toFixed(1) : '--';
-                            
+
                             // Actualizar humedad
-                            document.getElementById('humidity-value').textContent = 
+                            document.getElementById('humidity-value').textContent =
                                 latest.humedad !== null ? latest.humedad.toFixed(1) : '--';
-                            
+
                             // Actualizar RPM y convertir a km/h
                             if (latest.rpm !== null) {
                                 const rpm = latest.rpm;
@@ -320,14 +343,14 @@
                                 document.getElementById('wind-value').textContent = '--';
                                 document.getElementById('rpm-value').textContent = '-- RPM';
                             }
-                            
+
                             // Actualizar proximidad
-                            document.getElementById('prox-value').textContent = 
+                            document.getElementById('prox-value').textContent =
                                 latest.proximidad === 1 ? 'Detectado' : 'Libre';
-                            
+
                             // Actualizar historial
                             let historyHTML = '';
-                            result.features.forEach(function(feature, index) {
+                            result.features.forEach(function (feature, index) {
                                 const attr = feature.attributes;
                                 const kmh = attr.rpm !== null ? rpmToKmh(attr.rpm).toFixed(2) : '--';
                                 historyHTML += `
@@ -343,38 +366,39 @@
                                 `;
                             });
                             document.getElementById('history-list').innerHTML = historyHTML;
-                            
+
                             // Actualizar estado
                             const statusEl = document.getElementById('status');
                             statusEl.textContent = '✅ Conectado - Última actualización: ' + new Date().toLocaleTimeString('es-ES');
                             statusEl.classList.remove('loading');
-                            
+
                             // Limpiar errores
                             document.getElementById('error-container').innerHTML = '';
                         } else {
                             showError('No hay datos disponibles');
                         }
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.error('Error:', error);
                         showError('Error al cargar datos: ' + error.message);
                     });
             }
-            
+
             function showError(message) {
-                document.getElementById('error-container').innerHTML = 
+                document.getElementById('error-container').innerHTML =
                     '<div class="error">⚠️ ' + message + '</div>';
                 const statusEl = document.getElementById('status');
                 statusEl.textContent = '❌ Error de conexión';
                 statusEl.classList.remove('loading');
             }
-            
+
             // Cargar datos inicialmente
             updateSensorData();
-            
+
             // Actualizar cada 6 segundos
             setInterval(updateSensorData, 6000);
         });
     </script>
 </body>
+
 </html>
