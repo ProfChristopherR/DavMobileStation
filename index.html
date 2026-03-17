@@ -88,9 +88,9 @@
     <main class="max-w-7xl mx-auto space-y-8">
 
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6 animate__animated animate__fadeIn">
-            <div class="glass-card p-6 flex flex-col items-center justify-center min-h-[300px]">
-                <h4 class="text-slate-400 font-semibold mb-4 uppercase tracking-tighter">Velocidad Viento</h4>
-                <div id="gauge-wind" class="w-full h-48"></div>
+            <div class="glass-card p-6 flex flex-col items-center justify-center min-h-[350px]">
+                <h4 class="text-slate-400 font-semibold mb-4 uppercase tracking-tighter text-lg">Velocidad Viento</h4>
+                <div id="gauge-wind" class="w-full h-72"></div>
             </div>
 
             <div class="glass-card p-6 flex flex-col items-center justify-center">
@@ -168,7 +168,7 @@
                 windGauge.setOption({
                     backgroundColor: 'transparent',
                     series: [{
-                        type: 'gauge', min: 0, max: 45, splitNumber: 6,
+                        type: 'gauge', min: 0, max: 40, splitNumber: 8,
                         axisLine: { lineStyle: { width: 6, color: [[1, 'rgba(56, 189, 248, 0.2)']] } },
                         pointer: { width: 4, itemStyle: { color: '#38bdf8' } },
                         detail: { show: false },
@@ -250,7 +250,7 @@
         }
 
         // Ciclo de actualización
-        setInterval(fetchRealtime, 15000);
+        setInterval(fetchRealtime, 3000);
         fetchRealtime();
         updateHistory('temperatura');
 
