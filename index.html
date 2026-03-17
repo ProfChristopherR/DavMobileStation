@@ -67,20 +67,24 @@
 <body class="p-4 md:p-8">
 
     <header
-        class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between mb-12 animate__animated animate__fadeInDown">
-        <div class="flex items-center gap-6">
-            <img src="logo.png" alt="Logo Liceo" class="w-20 h-20 object-contain drop-shadow-xl">
-            <div>
-                <h2 class="text-sm font-light tracking-widest text-slate-400 uppercase">Liceo de Excelencia Polivalente
-                </h2>
-                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">SAN NICOLÁS</h1>
+        class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between mb-12 animate__animated animate__fadeInDown text-center md:text-left">
+        <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+            <div class="flex items-center gap-4">
+                <img src="logo2.png" alt="Logo Alternativo" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl" onerror="this.style.display='none'">
+                <img src="logo.png" alt="Logo Liceo" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl">
             </div>
-        </di        <div class="text-right mt-6 md:mt-0">
-            <div class="flex items-center justify-end gap-2 text-xs mb-1" id="status-indicator">
+            <div>
+                <h2 class="text-xs md:text-sm font-light tracking-widest text-slate-400 uppercase">Liceo de Excelencia Polivalente
+                </h2>
+                <h1 class="text-xl md:text-3xl font-extrabold tracking-tight">SAN NICOLÁS</h1>
+            </div>
+        </div>
+        <div class="mt-6 md:mt-0 w-full md:w-auto flex flex-col items-center md:items-end">
+            <div class="flex items-center gap-2 text-xs mb-1" id="status-indicator">
                 <span class="live-dot" id="live-dot"></span> 
                 <span class="text-emerald-400 font-semibold tracking-widest" id="status-text">SISTEMA EN VIVO</span>
             </div>
-            <h3 class="text-4xl font-black text-gradient italic">DAV Mobile Station</h3>
+            <h3 class="text-3xl md:text-4xl font-black text-gradient italic">DAV Mobile Station</h3>
         </div>
     </header>
 
@@ -154,6 +158,7 @@
 
         // Variables Globales Lógica
         let lastDataTime = Date.now();
+        let lastReportedTimestamp = 0;
         let isOffline = false;
         const OFFLINE_THRESHOLD_MS = 30000; // 30 segundos
         const GAP_THRESHOLD_MS = 120000; // 2 minutos máximo entre puntos
@@ -225,7 +230,12 @@
                 
                 if(data.features && data.features.length > 0){
                     const latest = data.features[0].attributes;
-                    lastDataTime = Date.now();
+                    
+                    // Actualizar el temporizador de offline SI recibimos un dato nuevo o reciente.
+                    if (latest.fecha_lectura !== lastReportedTimestamp) {
+                        lastReportedTimestamp = latest.fecha_lectura;
+                        lastDataTime = Date.now();
+                    }
 
                     // Actualizar UI
                     document.getElementById('temp-val').innerText = `${latest.temperatura.toFixed(1)}°C`;
@@ -316,7 +326,8 @@
                         formatter: function (params) {
                             let dt = params[0].value[0];
                             let val = params[0].value[1];
-                            let timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            // Mostrar horas, minutos y segundos por si se hace zoom profundo
+                            let timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                             return `${timeStr}<br/><b>${val}</b>`;
                         }
                     },
@@ -327,8 +338,8 @@
                     ],
                     xAxis: { 
                         type: 'time', 
-                        axisLine: { lineStyle: { color: '#475569' } },
-                        axisLabel: { formatter: '{HH}:{mm}' }
+                        axisLine: { lineStyle: { color: '#475569' } }
+                        // Quitamos el format fijo de {HH}:{mm} para que Echarts autoajuste si se enfoca en segundos
                     },
                     yAxis: { 
                         type: 'value', 
