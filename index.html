@@ -92,7 +92,8 @@
 
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6 animate__animated animate__fadeIn">
             <div class="glass-card p-6 flex flex-col items-center justify-center min-h-[350px]">
-                <h4 class="text-slate-400 font-semibold mb-4 uppercase tracking-tighter text-lg">Velocidad Viento</h4>
+                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-lg">Velocidad Viento</h4>
+                <div id="wind-val-text" class="text-2xl font-bold text-sky-400 mb-2">-- km/h</div>
                 <div id="gauge-wind" class="w-full h-72"></div>
             </div>
 
@@ -246,6 +247,7 @@
                     document.getElementById('dew-val').innerText = calculateDewPoint(latest.temperatura, latest.humedad);
 
                     // Actualizar Gauge Viento
+                    document.getElementById('wind-val-text').innerText = `${latest.velocidad_viento.toFixed(1)} km/h`;
                     windGauge.setOption({
                         backgroundColor: 'transparent',
                         series: [{
@@ -344,13 +346,17 @@
                     yAxis: { 
                         type: 'value', 
                         splitLine: { lineStyle: { color: '#1e293b' } }, 
-                        name: campo === 'temperatura' ? '°C' : campo === 'humedad' ? '%' : 'km/h' 
+                        name: campo === 'temperatura' ? '°C' : campo === 'humedad' ? '%' : 'km/h',
+                        // El margin automático asegura que al hacer zoom profundo el valor en Y se mantenga
+                        scale: true
                     },
                     series: [{
                         data: processedData,
                         type: 'line',
+                        // Cambio step a false y añado conectores de null (Echarts omite render si solo hay 1 punto en la vista)
+                        connectNulls: true,
+                        showSymbol: false,
                         smooth: true,
-                        symbol: 'none',
                         areaStyle: {
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                                 { offset: 0, color: areaColorInfo },
