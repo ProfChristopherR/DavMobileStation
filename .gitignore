@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Historical Data (if too large for Git)
+# Descomentar si no quieres subir los CSV
+# historico/
+
+# ArcGIS
+*.arcgis
+
+# Misc
+.DS_Store
+find_stations.py
+test_openmeteo.py
+check_agromet.py
