@@ -8,10 +8,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pronostico
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        path: '.' # Ensure checkout is at root
 
     - name: Set up Python
       uses: actions/setup-python@v4
