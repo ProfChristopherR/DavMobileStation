@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -6,7 +5,7 @@ __pycache__/
 venv/
 .env
 
-# Historical Data (if too large for Git)
+# Historical Data
 # Descomentar si no quieres subir los CSV
 # historico/
 
@@ -15,13 +14,11 @@ venv/
 
 # Misc
 .DS_Store
+Thumbs.db
+node_modules/
+*.log
+
+# Scripts (previously at root, now moved to /pronostico)
 find_stations.py
 test_openmeteo.py
 check_agromet.py
-=======
-.DS_Store
-Thumbs.db
-node_modules/
-.env
-*.log
->>>>>>> 076de2133e917399a72def4ae4ff9fc9733f1256
