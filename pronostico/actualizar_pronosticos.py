@@ -3,6 +3,7 @@ import requests
 from datetime import datetime, timedelta
 from arcgis.gis import GIS
 import os
+import pytz
 import glob
 import urllib3
 
@@ -82,9 +83,9 @@ def obtener_datos_actuales():
         "latitude": LATITUD,
         "longitude": LONGITUD,
         "daily": ["temperature_2m_max", "temperature_2m_min", "temperature_2m_mean"],
-        "timezone": "auto",
-        "past_days": 10,
-        "forecast_days": 1
+        "timezone": "America/Santiago", # Forzamos la zona horaria en la API también
+        "past_days": 0,                 # No queremos días pasados en el resultado actual
+        "forecast_days": 7              # Pedimos 7 días para tener margen
     }
     
     try:
@@ -116,8 +117,14 @@ def obtener_datos_actuales():
 # ==========================================
 
 def calcular_pronostico_variable(serie_reciente, serie_historica):
-    """Calcula el pronóstico de 4 días para UNA variable específica."""
-    hoy = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    # Definimos la zona horaria de Chile
+    tz_chile = pytz.timezone('America/Santiago')
+    # Obtenemos la fecha actual en Chile y eliminamos la hora
+    hoy_chile = datetime.now(tz_chile).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # IMPORTANTE: Convertimos hoy_chile a un datetime "naive" (sin zona horaria) 
+    # para que sea compatible con los índices de tus DataFrames de pandas
+    hoy = hoy_chile.replace(tzinfo=None)
     # Tomamos los últimos 7 días como base
     valores_dinamicos = serie_reciente.tail(7).tolist()
     resultados = []
