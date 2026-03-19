@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAV Mobile Station | Liceo San Nicolás</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Animación de pulso para indicar "En Vivo" */
+        .live-dot {
+            height: 8px;
+            width: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <header
+        class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between mb-12 animate__animated animate__fadeInDown text-center md:text-left">
+        <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+            <div class="flex items-center gap-4">
+                <img src="logo2.png" alt="Logo Alternativo"
+                    class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl" onerror="this.style.display='none'">
+                <img src="logo.png" alt="Logo Liceo" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl">
+            </div>
+            <div>
+                <h2 class="text-xs md:text-sm font-light tracking-widest text-slate-400 uppercase">Liceo de Excelencia
+                    Polivalente
+                </h2>
+                <h1 class="text-xl md:text-3xl font-extrabold tracking-tight">SAN NICOLÁS</h1>
+            </div>
+        </div>
+        <div class="mt-6 md:mt-0 w-full md:w-auto flex flex-col items-center md:items-end">
+            <div class="flex items-center gap-2 text-xs mb-1" id="status-indicator">
+                <span class="live-dot" id="live-dot"></span>
+                <span class="text-emerald-400 font-semibold tracking-widest" id="status-text">SISTEMA EN VIVO</span>
+            </div>
+            <h3 class="text-3xl md:text-4xl font-black text-gradient italic">DAV Mobile Station</h3>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto space-y-8">
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 animate__animated animate__fadeIn">
+            <div class="glass-card p-6 flex flex-col items-center justify-center min-h-[350px]">
+                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-lg">Velocidad Viento</h4>
+                <div id="wind-val-text" class="text-2xl font-bold text-sky-400 mb-2">-- km/h</div>
+                <div id="gauge-wind" class="w-full h-72"></div>
+            </div>
+
+            <div class="glass-card p-6 flex flex-col items-center justify-center">
+                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter">Temperatura</h4>
+                <div id="temp-val" class="text-7xl font-black mb-2 tracking-tighter">--°C</div>
+                <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4 overflow-hidden">
+                    <div id="temp-bar" class="bg-orange-500 h-full transition-all duration-1000" style="width: 0%">
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 flex flex-col items-center justify-center">
+                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter">Humedad Relativa</h4>
+                <div id="hum-val" class="text-7xl font-black text-sky-400 mb-2 tracking-tighter">--%</div>
+                <p class="text-xs text-slate-500 font-light">Punto de rocío: <span id="dew-val">--</span>°C</p>
+            </div>
+        </section>
+
+        <section class="glass-card p-4 md:p-8 animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h3 class="text-2xl font-bold">Tendencias Históricas</h3>
+                    <p class="text-slate-400 text-sm" id="history-subtitle">Cargando fecha de inicio...</p>
+                </div>
+                <div class="flex flex-col items-end gap-2 w-full md:w-auto">
+                    <div class="flex items-center gap-2">
+                        <label for="history-date" class="text-xs text-slate-400 font-semibold uppercase">Fecha:</label>
+                        <input type="date" id="history-date"
+                            class="px-2 py-1 rounded-md bg-slate-800 text-xs text-white border border-slate-700 outline-none focus:border-sky-500"
+                            onchange="updateHistory(currentHistoryField)">
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                        <button onclick="updateHistory('temperatura')"
+                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
+                            id="btn-temperatura">TEMP</button>
+                        <button onclick="updateHistory('humedad')"
+                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
+                            id="btn-humedad">HUM</button>
+                        <button onclick="updateHistory('velocidad_viento')"
+                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
+                            id="btn-velocidad_viento">VIENTO</button>
+                    </div>
+                </div>
+            </div>
+            <div id="history-chart" class="w-full h-[300px] md:h-[400px]"></div>
+        </section>
+
+        <!-- Nueva Sección de Pronóstico -->
+        <section class="animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold">Pronóstico del Tiempo</h3>
+                <p class="text-slate-400 text-sm">Próximos 4 días basándose en tendencias locales</p>
+            </div>
+            <div id="forecast-container" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Se llenará dinámicamente -->
+                <div class="glass-card p-6 flex flex-col items-center justify-center animate-pulse">
+                    <div class="h-4 w-20 bg-slate-700 rounded mb-4"></div>
+                    <div class="h-8 w-16 bg-slate-700 rounded mb-2"></div>
+                    <div class="h-4 w-12 bg-slate-700 rounded"></div>
+                </div>
+                <div class="glass-card p-6 flex flex-col items-center justify-center animate-pulse">
+                    <div class="h-4 w-20 bg-slate-700 rounded mb-4"></div>
+                    <div class="h-8 w-16 bg-slate-700 rounded mb-2"></div>
+                    <div class="h-4 w-12 bg-slate-700 rounded"></div>
+                </div>
+                <div class="glass-card p-6 flex flex-col items-center justify-center animate-pulse hidden md:flex">
+                    <div class="h-4 w-20 bg-slate-700 rounded mb-4"></div>
+                    <div class="h-8 w-16 bg-slate-700 rounded mb-2"></div>
+                    <div class="h-4 w-12 bg-slate-700 rounded"></div>
+                </div>
+                <div class="glass-card p-6 flex flex-col items-center justify-center animate-pulse hidden md:flex">
+                    <div class="h-4 w-20 bg-slate-700 rounded mb-4"></div>
+                    <div class="h-8 w-16 bg-slate-700 rounded mb-2"></div>
+                    <div class="h-4 w-12 bg-slate-700 rounded"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center py-12 text-slate-500 text-xs font-light tracking-[0.2em] uppercase">
+        Liceo de Excelencia Polivalente San Nicolás • <span id="current-year">2026</span> • © 3F GeoGo
+    </footer>
+
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // CONFIGURACIÓN DE DATA
+        const ARCGIS_URL = "https://services4.arcgis.com/RZghiOOKLo2VeJGO/arcgis/rest/services/Estacion_Metereologica/FeatureServer/0/query";
+        const FORECAST_URL = "https://services4.arcgis.com/RZghiOOKLo2VeJGO/arcgis/rest/services/Pronostico_estacion_metereologica/FeatureServer/0/query";
+
+        // Inicializar Gráficos
+        const windGauge = echarts.init(document.getElementById('gauge-wind'), 'dark');
+        const historyChart = echarts.init(document.getElementById('history-chart'), 'dark');
+
+        // Variables Globales Lógica
+        let lastDataTime = Date.now();
+        let lastReportedTimestamp = 0;
+        let isOffline = false;
+        const OFFLINE_THRESHOLD_MS = 30000; // 30 segundos
+        const GAP_THRESHOLD_MS = 120000; // 2 minutos máximo entre puntos
+
+        // Cálculo Punto de Rocío (Fórmula Magnus)
+        function calculateDewPoint(temp, hum) {
+            if (temp == null || hum == null || hum === 0) return "--";
+            const a = 17.625;
+            const b = 243.04;
+            const alpha = Math.log(hum / 100) + (a * temp) / (b + temp);
+            const dewPoint = (b * alpha) / (a - alpha);
+            return dewPoint.toFixed(1);
+        }
+
+        // Chequeo de conexión Offline
+        setInterval(() => {
+            const now = Date.now();
+            const dot = document.getElementById('live-dot');
+            const text = document.getElementById('status-text');
+
+            if (now - lastDataTime > OFFLINE_THRESHOLD_MS) {
+                if (!isOffline) {
+                    isOffline = true;
+                    dot.style.backgroundColor = '#ef4444'; // Red
+                    dot.style.boxShadow = '0 0 10px #ef4444';
+                    dot.style.animation = 'none';
+                    text.textContent = 'OFFLINE';
+                    text.classList.replace('text-emerald-400', 'text-red-400');
+                }
+            } else {
+                if (isOffline) {
+                    isOffline = false;
+                    dot.style.backgroundColor = '#10b981'; // Green
+                    dot.style.boxShadow = '0 0 10px #10b981';
+                    dot.style.animation = 'pulse 2s infinite';
+                    text.textContent = 'SISTEMA EN VIVO';
+                    text.classList.replace('text-red-400', 'text-emerald-400');
+                }
+            }
+        }, 1000);
+
+        // Fetch First Date
+        async function fetchFirstDate() {
+            try {
+                const params = "?where=1%3D1&outFields=fecha_lectura&orderByFields=fecha_lectura+ASC&resultRecordCount=1&f=pjson";
+                const response = await fetch(ARCGIS_URL + params);
+                const data = await response.json();
+
+                if (data.features && data.features.length > 0) {
+                    const timestamp = data.features[0].attributes.fecha_lectura;
+                    const dateObj = new Date(timestamp);
+                    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+                    document.getElementById('history-subtitle').textContent = `Registros almacenados desde ${dateObj.toLocaleDateString('es-ES', options)}`;
+                } else {
+                    document.getElementById('history-subtitle').textContent = "Sin registros históricos";
+                }
+            } catch (e) {
+                console.error("Error obteniendo primera fecha", e);
+            }
+        }
+        fetchFirstDate();
+
+        // Función para obtener datos en tiempo real
+        async function fetchRealtime() {
+            const params = "?where=1%3D1&outFields=*&orderByFields=fecha_lectura+DESC&resultRecordCount=1&f=pjson";
+            try {
+                const response = await fetch(ARCGIS_URL + params);
+                const data = await response.json();
+
+                if (data.features && data.features.length > 0) {
+                    const latest = data.features[0].attributes;
+
+                    // Actualizar el temporizador de offline SI recibimos un dato nuevo o reciente.
+                    if (latest.fecha_lectura !== lastReportedTimestamp) {
+                        lastReportedTimestamp = latest.fecha_lectura;
+                        lastDataTime = Date.now();
+                    }
+
+                    // Actualizar UI
+                    document.getElementById('temp-val').innerText = `${latest.temperatura.toFixed(1)}°C`;
+                    document.getElementById('hum-val').innerText = `${latest.humedad.toFixed(0)}%`;
+                    document.getElementById('temp-bar').style.width = `${(latest.temperatura / 50) * 100}%`;
+
+                    // Actualizar Punto de Rocío
+                    document.getElementById('dew-val').innerText = calculateDewPoint(latest.temperatura, latest.humedad);
+
+                    // Actualizar Gauge Viento
+                    document.getElementById('wind-val-text').innerText = `${latest.velocidad_viento.toFixed(1)} km/h`;
+                    windGauge.setOption({
+                        backgroundColor: 'transparent',
+                        series: [{
+                            type: 'gauge', min: 0, max: 40, splitNumber: 8,
+                            axisLine: { lineStyle: { width: 6, color: [[1, 'rgba(56, 189, 248, 0.2)']] } },
+                            pointer: { width: 4, itemStyle: { color: '#38bdf8' } },
+                            detail: { show: false },
+                            data: [{ value: latest.velocidad_viento.toFixed(1) }]
+                        }]
+                    });
+                }
+            } catch (e) { console.error("Error cargando tiempo real", e); }
+        }
+
+        let currentHistoryField = 'temperatura';
+        document.getElementById('history-date').valueAsDate = new Date();
+
+        // Función para obtener históricos
+        async function updateHistory(campo) {
+            currentHistoryField = campo;
+
+            ['temperatura', 'humedad', 'velocidad_viento'].forEach(c => {
+                document.getElementById(`btn-${c}`).classList.remove('bg-slate-600', 'border-sky-500');
+            });
+            document.getElementById(`btn-${campo}`).classList.add('bg-slate-600', 'border-sky-500');
+
+            const dateInput = document.getElementById('history-date').value;
+            let dateFilter = "1=1";
+
+            if (dateInput) {
+                const dateParts = dateInput.split('-');
+                const startDateStr = `${dateParts[0]}-${dateParts[1]}-${dateParts[2]} 00:00:00`;
+                const endDateStr = `${dateParts[0]}-${dateParts[1]}-${dateParts[2]} 23:59:59`;
+                dateFilter = `fecha_lectura >= '${startDateStr}' AND fecha_lectura <= '${endDateStr}'`;
+            }
+
+            const params = `?where=${encodeURIComponent(dateFilter)}&outFields=fecha_lectura,${campo}&orderByFields=fecha_lectura+ASC&f=pjson`;
+            try {
+                const response = await fetch(ARCGIS_URL + params);
+                const data = await response.json();
+
+                if (!data.features || data.features.length === 0) {
+                    historyChart.clear();
+                    historyChart.setOption({
+                        title: { text: "No hay datos para esta fecha", textStyle: { color: "#94a3b8", fontSize: 14, fontWeight: "normal" }, left: "center", top: "center" }
+                    });
+                    return;
+                }
+
+                let processedData = [];
+                let features = data.features;
+
+                for (let i = 0; i < features.length; i++) {
+                    let currentTimestamp = features[i].attributes.fecha_lectura;
+                    let currentValue = features[i].attributes[campo] || 0;
+
+                    // Agregar dato a cero entre medias si hay mucho espacio (falso point)
+                    if (i > 0) {
+                        let prevTimestamp = features[i - 1].attributes.fecha_lectura;
+                        if (currentTimestamp - prevTimestamp > GAP_THRESHOLD_MS) {
+                            processedData.push([new Date(prevTimestamp + 1000), 0]);
+                            processedData.push([new Date(currentTimestamp - 1000), 0]);
+                        }
+                    }
+                    processedData.push([new Date(currentTimestamp), currentValue]);
+                }
+
+                let lineColor, areaColorInfo;
+                if (campo === 'temperatura') { lineColor = '#f97316'; areaColorInfo = '#f97316'; }
+                else if (campo === 'humedad') { lineColor = '#38bdf8'; areaColorInfo = '#38bdf8'; }
+                else { lineColor = '#10b981'; areaColorInfo = '#10b981'; }
+
+                historyChart.setOption({
+                    title: { show: false },
+                    backgroundColor: 'transparent',
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: function (params) {
+                            let dt = params[0].value[0];
+                            let val = params[0].value[1];
+                            // Mostrar horas, minutos y segundos por si se hace zoom profundo
+                            let timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                            return `${timeStr}<br/><b>${val}</b>`;
+                        }
+                    },
+                    grid: { containLabel: true, left: '5%', right: '5%', bottom: '15%' },
+                    dataZoom: [
+                        { type: 'inside', start: 0, end: 100 },
+                        { type: 'slider', show: true, bottom: 0, textStyle: { color: '#94a3b8' } }
+                    ],
+                    xAxis: {
+                        type: 'time',
+                        axisLine: { lineStyle: { color: '#475569' } }
+                        // Quitamos el format fijo de {HH}:{mm} para que Echarts autoajuste si se enfoca en segundos
+                    },
+                    yAxis: {
+                        type: 'value',
+                        splitLine: { lineStyle: { color: '#1e293b' } },
+                        name: campo === 'temperatura' ? '°C' : campo === 'humedad' ? '%' : 'km/h',
+                        // El margin automático asegura que al hacer zoom profundo el valor en Y se mantenga
+                        scale: true
+                    },
+                    series: [{
+                        data: processedData,
+                        type: 'line',
+                        // Cambio step a false y añado conectores de null (Echarts omite render si solo hay 1 punto en la vista)
+                        connectNulls: true,
+                        showSymbol: false,
+                        smooth: true,
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: areaColorInfo },
+                                { offset: 1, color: 'transparent' }
+                            ])
+                        },
+                        lineStyle: { width: 3, color: lineColor }
+                    }]
+                }, true);
+            } catch (e) { console.error("Error cargando históricos", e); }
+        }
+
+        // Función para obtener pronóstico
+        async function fetchForecast() {
+            const params = "?where=1%3D1&outFields=fecha,tempmax,tempmin&orderByFields=fecha+ASC&f=pjson";
+            try {
+                const response = await fetch(FORECAST_URL + params);
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error("ArcGIS Error:", data.error);
+                    let msg = "Error en el servicio de pronóstico.";
+                    if (data.error.code === 499 || data.error.code === 403) {
+                        msg = "Error de permisos: El servicio de pronóstico no es público.";
+                    }
+                    document.getElementById('forecast-container').innerHTML = `
+                        <div class="col-span-full py-12 text-center text-red-400 font-semibold italic">
+                            ${msg}
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (data.features && data.features.length > 0) {
+                    renderForecast(data.features);
+                } else {
+                    document.getElementById('forecast-container').innerHTML = `
+                        <div class="col-span-full py-12 text-center text-slate-500 italic">
+                            No hay datos de pronóstico disponibles actualmente.
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error("Error cargando pronóstico", e);
+                document.getElementById('forecast-container').innerHTML = `
+                    <div class="col-span-full py-12 text-center text-red-500/50 italic">
+                        Error de conexión con el servicio de pronóstico.
+                    </div>
+                `;
+            }
+        }
+
+        function renderForecast(features) {
+            const container = document.getElementById('forecast-container');
+            container.innerHTML = '';
+
+            const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+            features.slice(0, 4).forEach((feat, index) => {
+                const attr = feat.attributes;
+                const date = new Date(attr.fecha);
+
+                // Ajustar para evitar problemas de zona horaria en la visualización del día
+                const dayName = index === 0 ? "Hoy" : diasSemana[date.getDay()];
+                const dayOfMonth = date.getDate();
+                const monthName = date.toLocaleString('es-ES', { month: 'short' }).replace('.', '');
+
+                const card = document.createElement('div');
+                card.className = "glass-card p-6 flex flex-col items-center justify-center animate__animated animate__fadeIn";
+                card.style.animationDelay = `${index * 0.1}s`;
+
+                card.innerHTML = `
+                    <p class="text-slate-400 font-bold text-xs uppercase tracking-widest mb-1">${dayName}</p>
+                    <p class="text-slate-500 text-[10px] mb-4">${dayOfMonth} ${monthName}</p>
+                    <div class="text-center">
+                        <span class="text-3xl font-black text-orange-500">${attr.tempmax.toFixed(0)}°</span>
+                        <span class="text-xl font-bold text-sky-400/80 ml-1">${attr.tempmin.toFixed(0)}°</span>
+                    </div>
+                    <div class="mt-4 flex gap-1">
+                        <div class="w-1 h-1 rounded-full bg-slate-700"></div>
+                        <div class="w-1 h-1 rounded-full bg-slate-700"></div>
+                        <div class="w-1 h-1 rounded-full bg-slate-700"></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Ciclo de actualización
+        setInterval(fetchRealtime, 2000);
+        fetchRealtime();
+        updateHistory('temperatura');
+        fetchForecast();
+
+        window.addEventListener('resize', () => {
+            windGauge.resize();
+            historyChart.resize();
+        });
+    </script>
+</body>
+
+</html>

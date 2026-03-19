@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -17,3 +18,10 @@ venv/
 find_stations.py
 test_openmeteo.py
 check_agromet.py
+=======
+.DS_Store
+Thumbs.db
+node_modules/
+.env
+*.log
+>>>>>>> 076de2133e917399a72def4ae4ff9fc9733f1256
