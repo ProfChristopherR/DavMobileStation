@@ -129,7 +129,7 @@ def calcular_pronostico_variable(serie_reciente, serie_historica):
     valores_dinamicos = serie_reciente.tail(7).tolist()
     resultados = []
 
-    for i in range(4):
+    for i in range(1, 5):
         fecha_p = hoy + timedelta(days=i)
         
         # --- PARTE 40%: Promedio histórico (Mismo día/mes años anteriores) ---
