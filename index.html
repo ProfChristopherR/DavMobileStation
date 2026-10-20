@@ -92,16 +92,16 @@
 
     <main class="max-w-7xl mx-auto space-y-8">
 
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 animate__animated animate__fadeIn">
-            <div class="glass-card p-6 flex flex-col items-center justify-center min-h-[350px]">
-                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-lg">Velocidad Viento</h4>
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate__animated animate__fadeIn">
+            <div class="glass-card p-6 flex flex-col items-center justify-center min-h-[300px]">
+                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-sm">Velocidad Viento</h4>
                 <div id="wind-val-text" class="text-2xl font-bold text-sky-400 mb-2">-- km/h</div>
-                <div id="gauge-wind" class="w-full h-72"></div>
+                <div id="gauge-wind" class="w-full h-64"></div>
             </div>
 
             <div class="glass-card p-6 flex flex-col items-center justify-center">
-                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter">Temperatura</h4>
-                <div id="temp-val" class="text-7xl font-black mb-2 tracking-tighter">--°C</div>
+                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-sm">Temperatura</h4>
+                <div id="temp-val" class="text-6xl md:text-7xl font-black mb-2 tracking-tighter">--°C</div>
                 <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4 overflow-hidden">
                     <div id="temp-bar" class="bg-orange-500 h-full transition-all duration-1000" style="width: 0%">
                     </div>
@@ -109,9 +109,22 @@
             </div>
 
             <div class="glass-card p-6 flex flex-col items-center justify-center">
-                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter">Humedad Relativa</h4>
-                <div id="hum-val" class="text-7xl font-black text-sky-400 mb-2 tracking-tighter">--%</div>
-                <p class="text-xs text-slate-500 font-light">Punto de rocío: <span id="dew-val">--</span>°C</p>
+                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-sm">Humedad Relativa</h4>
+                <div id="hum-val" class="text-6xl md:text-7xl font-black text-sky-400 mb-2 tracking-tighter">--%</div>
+                <p class="text-xs text-slate-500 font-light mt-3">Punto de rocío: <span id="dew-val" class="text-slate-300 font-medium">--</span>°C</p>
+            </div>
+
+            <div class="glass-card p-6 flex flex-col items-center justify-center">
+                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-sm">Presión Barométrica</h4>
+                <div id="press-val" class="text-5xl md:text-6xl font-black text-violet-400 mb-2 tracking-tighter">-- hPa</div>
+                <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4 overflow-hidden mb-3">
+                    <div id="press-bar" class="bg-violet-500 h-full transition-all duration-1000" style="width: 50%"></div>
+                </div>
+                <p class="text-xs text-slate-400 font-light flex items-center justify-center gap-1.5" id="press-trend-container">
+                    <span id="press-trend-icon" class="text-violet-400">●</span> 
+                    <span id="press-trend-text">Estable</span>
+                    <span class="text-slate-500">(<span id="press-trend-diff">--</span> hPa/3h)</span>
+                </p>
             </div>
         </section>
 
@@ -135,6 +148,9 @@
                         <button onclick="updateHistory('humedad')"
                             class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
                             id="btn-humedad">HUM</button>
+                        <button onclick="updateHistory('presion')"
+                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
+                            id="btn-presion">PRESIÓN</button>
                         <button onclick="updateHistory('velocidad_viento')"
                             class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
                             id="btn-velocidad_viento">VIENTO</button>
@@ -280,6 +296,16 @@
                     // Actualizar Punto de Rocío
                     document.getElementById('dew-val').innerText = calculateDewPoint(latest.temperatura, latest.humedad);
 
+                    // Actualizar Presión Barométrica
+                    if (latest.presion != null && !isNaN(latest.presion)) {
+                        document.getElementById('press-val').innerText = `${latest.presion.toFixed(1)} hPa`;
+                        const barPct = Math.min(100, Math.max(0, ((latest.presion - 960) / 80) * 100));
+                        document.getElementById('press-bar').style.width = `${barPct}%`;
+                        updatePressureTendency(latest.presion, latest.fecha_lectura);
+                    } else {
+                        document.getElementById('press-val').innerText = `-- hPa`;
+                    }
+
                     // Actualizar Gauge Viento
                     document.getElementById('wind-val-text').innerText = `${latest.velocidad_viento.toFixed(1)} km/h`;
                     windGauge.setOption({
@@ -296,6 +322,57 @@
             } catch (e) { console.error("Error cargando tiempo real", e); }
         }
 
+        // Cálculo de tendencia barométrica de las últimas 3 horas
+        let lastTendencyCheck = 0;
+        async function updatePressureTendency(currentPressure, currentTimestamp) {
+            if (!currentPressure || isNaN(currentPressure)) return;
+            const now = Date.now();
+            if (now - lastTendencyCheck < 30000) return; // Limitar consultas cada 30 s
+            lastTendencyCheck = now;
+
+            try {
+                const threeHoursAgo = currentTimestamp - (3 * 3600 * 1000);
+                const params = `?where=fecha_lectura%3C%3D${threeHoursAgo}&outFields=presion,fecha_lectura&orderByFields=fecha_lectura+DESC&resultRecordCount=1&f=pjson`;
+                const res = await fetch(ARCGIS_URL + params);
+                const d = await res.json();
+                const diffEl = document.getElementById('press-trend-diff');
+                const textEl = document.getElementById('press-trend-text');
+                const iconEl = document.getElementById('press-trend-icon');
+
+                if (d.features && d.features.length > 0 && d.features[0].attributes.presion != null) {
+                    const pastP = d.features[0].attributes.presion;
+                    const diff = currentPressure - pastP;
+                    diffEl.innerText = `${diff >= 0 ? '+' : ''}${diff.toFixed(1)}`;
+                    if (diff <= -2.5) {
+                        textEl.innerText = 'Caída Rápida (Alerta)';
+                        textEl.className = 'text-red-400 font-semibold';
+                        iconEl.innerText = '▼';
+                        iconEl.className = 'text-red-400';
+                    } else if (diff <= -1.0) {
+                        textEl.innerText = 'En Descenso';
+                        textEl.className = 'text-amber-400 font-medium';
+                        iconEl.innerText = '↘';
+                        iconEl.className = 'text-amber-400';
+                    } else if (diff >= 1.5) {
+                        textEl.innerText = 'En Ascenso';
+                        textEl.className = 'text-emerald-400 font-medium';
+                        iconEl.innerText = '▲';
+                        iconEl.className = 'text-emerald-400';
+                    } else {
+                        textEl.innerText = 'Estable';
+                        textEl.className = 'text-slate-400';
+                        iconEl.innerText = '●';
+                        iconEl.className = 'text-violet-400';
+                    }
+                } else {
+                    diffEl.innerText = '0.0';
+                    textEl.innerText = 'Estable';
+                }
+            } catch (e) {
+                console.error("Error calculando tendencia de presion", e);
+            }
+        }
+
         let currentHistoryField = 'temperatura';
         document.getElementById('history-date').valueAsDate = new Date();
 
@@ -303,10 +380,12 @@
         async function updateHistory(campo) {
             currentHistoryField = campo;
 
-            ['temperatura', 'humedad', 'velocidad_viento'].forEach(c => {
-                document.getElementById(`btn-${c}`).classList.remove('bg-slate-600', 'border-sky-500');
+            ['temperatura', 'humedad', 'velocidad_viento', 'presion'].forEach(c => {
+                const btn = document.getElementById(`btn-${c}`);
+                if (btn) btn.classList.remove('bg-slate-600', 'border-sky-500');
             });
-            document.getElementById(`btn-${campo}`).classList.add('bg-slate-600', 'border-sky-500');
+            const activeBtn = document.getElementById(`btn-${campo}`);
+            if (activeBtn) activeBtn.classList.add('bg-slate-600', 'border-sky-500');
 
             const dateInput = document.getElementById('history-date').value;
             let dateFilter = "1=1";
@@ -352,7 +431,10 @@
                 let lineColor, areaColorInfo;
                 if (campo === 'temperatura') { lineColor = '#f97316'; areaColorInfo = '#f97316'; }
                 else if (campo === 'humedad') { lineColor = '#38bdf8'; areaColorInfo = '#38bdf8'; }
+                else if (campo === 'presion') { lineColor = '#a855f7'; areaColorInfo = '#a855f7'; }
                 else { lineColor = '#10b981'; areaColorInfo = '#10b981'; }
+
+                const unit = campo === 'temperatura' ? '°C' : campo === 'humedad' ? '%' : campo === 'presion' ? 'hPa' : 'km/h';
 
                 historyChart.setOption({
                     title: { show: false },
@@ -362,9 +444,8 @@
                         formatter: function (params) {
                             let dt = params[0].value[0];
                             let val = params[0].value[1];
-                            // Mostrar horas, minutos y segundos por si se hace zoom profundo
                             let timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                            return `${timeStr}<br/><b>${val}</b>`;
+                            return `${timeStr}<br/><b>${val} ${unit}</b>`;
                         }
                     },
                     grid: { containLabel: true, left: '5%', right: '5%', bottom: '15%' },
@@ -375,19 +456,16 @@
                     xAxis: {
                         type: 'time',
                         axisLine: { lineStyle: { color: '#475569' } }
-                        // Quitamos el format fijo de {HH}:{mm} para que Echarts autoajuste si se enfoca en segundos
                     },
                     yAxis: {
                         type: 'value',
                         splitLine: { lineStyle: { color: '#1e293b' } },
-                        name: campo === 'temperatura' ? '°C' : campo === 'humedad' ? '%' : 'km/h',
-                        // El margin automático asegura que al hacer zoom profundo el valor en Y se mantenga
+                        name: unit,
                         scale: true
                     },
                     series: [{
                         data: processedData,
                         type: 'line',
-                        // Cambio step a false y añado conectores de null (Echarts omite render si solo hay 1 punto en la vista)
                         connectNulls: true,
                         showSymbol: false,
                         smooth: true,

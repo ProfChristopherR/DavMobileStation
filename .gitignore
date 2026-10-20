@@ -22,3 +22,4 @@ node_modules/
 find_stations.py
 test_openmeteo.py
 check_agromet.py
+*.zip
