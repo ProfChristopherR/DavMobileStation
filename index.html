@@ -4,255 +4,693 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAV Mobile Station | Liceo San Nicolás</title>
+    <title>DAV Mobile Station v5.0 | GeoGo — Liceo San Nicolás</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            --spring-ease: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
-            color: white;
+            background-color: #0b1120;
+            background-image:
+                radial-gradient(circle at 12% 15%, rgba(56, 189, 248, 0.11), transparent 38%),
+                radial-gradient(circle at 88% 12%, rgba(16, 185, 129, 0.09), transparent 36%),
+                radial-gradient(circle at 50% 85%, rgba(139, 92, 246, 0.09), transparent 45%),
+                linear-gradient(180deg, #0b1120 0%, #0f172a 55%, #090e1a 100%);
+            color: #f8fafc;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
+        .font-mono-num {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ==========================================================================
+           SPATIAL UI + SOFT DARK NEUMORPHISM SYSTEM (MASTER.md)
+           ========================================================================== */
+        .spatial-card {
+            position: relative;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.62), rgba(15, 23, 42, 0.78));
+            backdrop-filter: blur(22px) saturate(160%);
+            -webkit-backdrop-filter: blur(22px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-top: 1px solid rgba(255, 255, 255, 0.20);
+            border-radius: 28px;
+            box-shadow:
+                12px 16px 34px rgba(2, 6, 23, 0.68),
+                -6px -6px 20px rgba(255, 255, 255, 0.02),
+                inset 0 1px 1px rgba(255, 255, 255, 0.14);
+            transition: transform 0.45s var(--spring-ease), border-color 0.45s var(--spring-ease), box-shadow 0.45s var(--spring-ease);
+        }
+
+        .spatial-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(56, 189, 248, 0.32);
+            box-shadow:
+                14px 22px 40px rgba(2, 6, 23, 0.78),
+                -6px -6px 24px rgba(56, 189, 248, 0.04),
+                inset 0 1px 1.5px rgba(255, 255, 255, 0.24);
+        }
+
+        /* Cavidad Neumórfica (Inset) */
+        .neo-inset {
+            background: rgba(9, 14, 26, 0.68);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow:
+                inset 4px 4px 10px rgba(2, 6, 23, 0.88),
+                inset -2px -2px 8px rgba(255, 255, 255, 0.035);
+        }
+
+        .neo-pill-badge {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.92));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow:
+                4px 6px 14px rgba(2, 6, 23, 0.55),
+                inset 0 1px 1px rgba(255, 255, 255, 0.16);
+        }
+
+        /* ==========================================================================
+           GLASSY NAVIGATION TABS V7 (Inspirado en el video)
+           ========================================================================== */
+        .glass-tabs-track {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            padding: 6px;
+            border-radius: 9999px;
+            background: rgba(15, 23, 42, 0.62);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow:
+                inset 3px 4px 10px rgba(2, 6, 23, 0.75),
+                inset -2px -2px 6px rgba(255, 255, 255, 0.04),
+                0 10px 28px rgba(2, 6, 23, 0.45);
+            overflow-x: auto;
+            max-width: 100%;
+            scrollbar-width: none;
+        }
+
+        .glass-tabs-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        .glass-tab-pill {
+            position: absolute;
+            top: 6px;
+            bottom: 6px;
+            left: 0;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.07) 100%);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            transition: all 0.3s ease;
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            box-shadow:
+                0 6px 20px rgba(0, 0, 0, 0.38),
+                0 0 16px rgba(56, 189, 248, 0.16),
+                inset 0 1.5px 2px rgba(255, 255, 255, 0.48),
+                inset 0 -1px 1px rgba(255, 255, 255, 0.10);
+            transition:
+                transform 0.48s var(--spring-ease),
+                width 0.48s var(--spring-ease);
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .glass-card:hover {
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            transform: translateY(-5px);
+        .glass-tab-btn {
+            position: relative;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 9999px;
+            font-size: 0.80rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: rgba(226, 232, 240, 0.65);
+            white-space: nowrap;
+            transition: color 0.3s ease, transform 0.25s ease;
+            cursor: pointer;
+            user-select: none;
         }
 
+        .glass-tab-btn:hover {
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        .glass-tab-btn.active {
+            color: #ffffff;
+            text-shadow: 0 1px 8px rgba(255, 255, 255, 0.28);
+        }
+
+        /* Gradientes de texto */
         .text-gradient {
-            background: linear-gradient(to right, #38bdf8, #818cf8);
+            background: linear-gradient(135deg, #38bdf8 0%, #34d399 52%, #818cf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* Animación de pulso para indicar "En Vivo" */
+        /* Pulso "En Vivo" */
         .live-dot {
-            height: 8px;
-            width: 8px;
+            height: 9px;
+            width: 9px;
             background-color: #10b981;
             border-radius: 50%;
             display: inline-block;
-            box-shadow: 0 0 10px #10b981;
+            box-shadow: 0 0 12px #10b981;
             animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.92); }
+        }
 
-            50% {
-                opacity: 0.3;
-            }
+        /* Brújula y Nivel Espacial */
+        .compass-needle {
+            transition: transform 0.75s var(--spring-ease);
+            transform-origin: 50% 50%;
+        }
 
-            100% {
-                opacity: 1;
-            }
+        .level-bubble {
+            transition: transform 0.55s var(--spring-ease), background-color 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .section-transition {
+            transition: opacity 0.38s ease, transform 0.38s var(--spring-ease);
         }
     </style>
 </head>
 
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 lg:p-10">
 
-    <header
-        class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between mb-12 animate__animated animate__fadeInDown text-center md:text-left">
-        <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-            <div class="flex items-center gap-4">
-                <img src="logo2.png" alt="Logo Alternativo"
-                    class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl" onerror="this.style.display='none'">
-                <img src="logo.png" alt="Logo Liceo" class="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-xl">
+    <!-- =========================================================================
+         HEADER ESPACIAL — IDENTIDAD LICEO SAN NICOLÁS & GEOGO PREMILITAR
+         ========================================================================= -->
+    <header class="max-w-7xl mx-auto mb-8 animate__animated animate__fadeInDown">
+        <div class="spatial-card p-5 md:p-7 flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div class="flex flex-col sm:flex-row items-center gap-4 md:gap-6 text-center sm:text-left">
+                <div class="flex items-center gap-3 p-2.5 neo-inset rounded-2xl">
+                    <img src="logo2.png" alt="Logo GeoGo"
+                        class="w-14 h-14 md:w-16 md:h-16 object-contain drop-shadow-lg" onerror="this.style.display='none'">
+                    <img src="logo.png" alt="Logo Liceo San Nicolás"
+                        class="w-14 h-14 md:w-16 md:h-16 object-contain drop-shadow-lg" onerror="this.style.display='none'">
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+                        <span class="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
+                            Liceo Bicentenario de Excelencia Polivalente San Nicolás
+                        </span>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">
+                            GeoGo • Área Premilitar
+                        </span>
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white">
+                        DAV Mobile Station <span class="text-gradient">v5.0</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Telemetría Portátil de Microclimas para Control y Estimación Agrícola en Tiempo Real
+                    </p>
+                </div>
             </div>
-            <div>
-                <h2 class="text-xs md:text-sm font-light tracking-widest text-slate-400 uppercase">Liceo de Excelencia
-                    Polivalente
-                </h2>
-                <h1 class="text-xl md:text-3xl font-extrabold tracking-tight">SAN NICOLÁS</h1>
+
+            <div class="flex flex-col items-center lg:items-end gap-2.5 w-full lg:w-auto">
+                <div class="neo-pill-badge px-4 py-2 rounded-full flex items-center gap-2.5" id="status-indicator">
+                    <span class="live-dot" id="live-dot" style="background-color: #94a3b8; box-shadow: none; animation: none;"></span>
+                    <span class="text-slate-300 text-xs font-bold tracking-widest uppercase" id="status-text">VERIFICANDO SEÑAL</span>
+                </div>
+                <div class="text-[11px] text-slate-400 font-mono-num" id="last-update-text">
+                    Última lectura: --:--:--
+                </div>
             </div>
         </div>
-        <div class="mt-6 md:mt-0 w-full md:w-auto flex flex-col items-center md:items-end">
-            <div class="flex items-center gap-2 text-xs mb-1" id="status-indicator">
-                <span class="live-dot" id="live-dot" style="background-color: #94a3b8; box-shadow: none; animation: none;"></span>
-                <span class="text-slate-400 font-semibold tracking-widest" id="status-text">VERIFICANDO ESTADO</span>
-            </div>
-            <h3 class="text-3xl md:text-4xl font-black text-gradient italic">DAV Mobile Station</h3>
+
+        <!-- BARRA DE NAVEGACIÓN GLASSY TABS V7 (Inspirada en el video) -->
+        <div class="flex justify-center mt-6">
+            <nav class="glass-tabs-track" id="main-nav-track" aria-label="Secciones del panel">
+                <div class="glass-tab-pill" id="main-nav-pill"></div>
+                <button type="button" class="glass-tab-btn active" data-view="all" onclick="switchMainView('all', this)">
+                    <span>◈</span> <span>Vista General</span>
+                </button>
+                <button type="button" class="glass-tab-btn" data-view="clima" onclick="switchMainView('clima', this)">
+                    <span>☀</span> <span>Microclima</span>
+                </button>
+                <button type="button" class="glass-tab-btn" data-view="orientacion" onclick="switchMainView('orientacion', this)">
+                    <span>🧭</span> <span>Orientación GY-9250</span>
+                </button>
+                <button type="button" class="glass-tab-btn" data-view="historial" onclick="switchMainView('historial', this)">
+                    <span>📈</span> <span>Tendencias</span>
+                </button>
+                <button type="button" class="glass-tab-btn" data-view="pronostico" onclick="switchMainView('pronostico', this)">
+                    <span>🗓</span> <span>Pronóstico</span>
+                </button>
+            </nav>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto space-y-8">
 
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate__animated animate__fadeIn">
-            <div class="glass-card p-6 flex flex-col items-center justify-center min-h-[300px]">
-                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-sm">Velocidad Viento</h4>
-                <div id="wind-val-text" class="text-2xl font-bold text-sky-400 mb-2">-- km/h</div>
-                <div id="gauge-wind" class="w-full h-64"></div>
+        <!-- =====================================================================
+             BANDA DE DIAGNÓSTICO AGRÍCOLA DE MICROCLIMA
+             ===================================================================== -->
+        <section id="sec-agro" class="spatial-card p-4 md:p-5 animate__animated animate__fadeIn">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                <div class="neo-inset p-3.5 flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-lg" id="agro-frost-icon">
+                        🌱
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Estado Térmico de Cultivo</p>
+                        <p class="text-sm font-bold text-slate-100" id="agro-frost-text">Evaluando microclima...</p>
+                    </div>
+                </div>
+
+                <div class="neo-inset p-3.5 flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-teal-500/15 border border-teal-400/30 flex items-center justify-center text-lg">
+                        💨
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Ventana de Aplicación / Riego</p>
+                        <p class="text-sm font-bold text-slate-100" id="agro-spray-text">Esperando lectura de viento...</p>
+                    </div>
+                </div>
+
+                <div class="neo-inset p-3.5 flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-lg">
+                        📐
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Estabilidad de Estación (GY-9250)</p>
+                        <p class="text-sm font-bold text-slate-100" id="agro-level-text">Esperando telemetría de ejes...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             SECCIÓN 1: TELEMETRÍA METEOROLÓGICA EN TIEMPO REAL (4 CARDS)
+             ===================================================================== -->
+        <section id="sec-clima" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate__animated animate__fadeIn">
+            <!-- Velocidad del Viento -->
+            <div class="spatial-card p-6 flex flex-col items-center justify-between min-h-[290px]">
+                <div class="w-full flex items-center justify-between">
+                    <h4 class="text-slate-400 font-semibold uppercase tracking-wider text-xs">Velocidad Viento</h4>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-400/20 font-mono-num">Anemómetro</span>
+                </div>
+                <div id="wind-val-text" class="text-3xl font-black text-sky-400 mt-2 font-mono-num">-- km/h</div>
+                <div id="gauge-wind" class="w-full h-48 -my-2"></div>
+                <p class="text-[11px] text-slate-400 text-center" id="wind-beaufort-text">Sin brisa registrada</p>
             </div>
 
-            <div class="glass-card p-6 flex flex-col items-center justify-center">
-                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-sm">Temperatura</h4>
-                <div id="temp-val" class="text-6xl md:text-7xl font-black mb-2 tracking-tighter">--°C</div>
-                <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4 overflow-hidden">
-                    <div id="temp-bar" class="bg-orange-500 h-full transition-all duration-1000" style="width: 0%">
+            <!-- Temperatura -->
+            <div class="spatial-card p-6 flex flex-col justify-between min-h-[290px]">
+                <div class="w-full flex items-center justify-between">
+                    <h4 class="text-slate-400 font-semibold uppercase tracking-wider text-xs">Temperatura Aire</h4>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-300 border border-orange-400/20 font-mono-num">BME280</span>
+                </div>
+                <div class="my-auto text-center py-4">
+                    <div id="temp-val" class="text-6xl font-black tracking-tight text-white font-mono-num">--°C</div>
+                    <p class="text-xs text-slate-400 mt-2" id="temp-comfort-text">Rango térmico local</p>
+                </div>
+                <div class="w-full">
+                    <div class="flex justify-between text-[10px] text-slate-500 font-mono-num mb-1">
+                        <span>0°C</span>
+                        <span>25°C</span>
+                        <span>50°C</span>
+                    </div>
+                    <div class="w-full neo-inset rounded-full h-3 p-0.5 overflow-hidden">
+                        <div id="temp-bar" class="bg-gradient-to-r from-sky-400 via-amber-400 to-orange-500 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="glass-card p-6 flex flex-col items-center justify-center">
-                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-sm">Humedad Relativa</h4>
-                <div id="hum-val" class="text-6xl md:text-7xl font-black text-sky-400 mb-2 tracking-tighter">--%</div>
-                <p class="text-xs text-slate-500 font-light mt-3">Punto de rocío: <span id="dew-val" class="text-slate-300 font-medium">--</span>°C</p>
+            <!-- Humedad Relativa -->
+            <div class="spatial-card p-6 flex flex-col justify-between min-h-[290px]">
+                <div class="w-full flex items-center justify-between">
+                    <h4 class="text-slate-400 font-semibold uppercase tracking-wider text-xs">Humedad Relativa</h4>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/20 font-mono-num">Higrometría</span>
+                </div>
+                <div class="my-auto text-center py-4">
+                    <div id="hum-val" class="text-6xl font-black text-sky-400 tracking-tight font-mono-num">--%</div>
+                </div>
+                <div class="neo-inset p-3 rounded-2xl flex items-center justify-between">
+                    <span class="text-xs text-slate-400">Punto de Rocío</span>
+                    <span class="text-sm font-bold text-slate-100 font-mono-num"><span id="dew-val">--</span> °C</span>
+                </div>
             </div>
 
-            <div class="glass-card p-6 flex flex-col items-center justify-center">
-                <h4 class="text-slate-400 font-semibold mb-2 uppercase tracking-tighter text-sm">Presión Barométrica</h4>
-                <div id="press-val" class="text-5xl md:text-6xl font-black text-violet-400 mb-2 tracking-tighter">-- hPa</div>
-                <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4 overflow-hidden mb-3">
-                    <div id="press-bar" class="bg-violet-500 h-full transition-all duration-1000" style="width: 50%"></div>
+            <!-- Presión Barométrica -->
+            <div class="spatial-card p-6 flex flex-col justify-between min-h-[290px]">
+                <div class="w-full flex items-center justify-between">
+                    <h4 class="text-slate-400 font-semibold uppercase tracking-wider text-xs">Presión Barométrica</h4>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-400/20 font-mono-num">SPI</span>
                 </div>
-                <p class="text-xs text-slate-400 font-light flex items-center justify-center gap-1.5" id="press-trend-container">
-                    <span id="press-trend-icon" class="text-violet-400">●</span> 
-                    <span id="press-trend-text">Estable</span>
-                    <span class="text-slate-500">(<span id="press-trend-diff">--</span> hPa/3h)</span>
-                </p>
+                <div class="my-auto text-center py-3">
+                    <div id="press-val" class="text-4xl md:text-5xl font-black text-violet-400 tracking-tight font-mono-num">-- hPa</div>
+                    <div class="w-full neo-inset rounded-full h-3 p-0.5 overflow-hidden mt-5">
+                        <div id="press-bar" class="bg-gradient-to-r from-indigo-500 to-violet-400 h-full rounded-full transition-all duration-1000" style="width: 50%"></div>
+                    </div>
+                </div>
+                <div class="neo-inset px-3 py-2.5 rounded-2xl flex items-center justify-between text-xs" id="press-trend-container">
+                    <div class="flex items-center gap-1.5">
+                        <span id="press-trend-icon" class="text-violet-400">●</span>
+                        <span id="press-trend-text" class="text-slate-300 font-medium">Estable</span>
+                    </div>
+                    <span class="text-slate-400 font-mono-num"><span id="press-trend-diff">--</span> hPa/3h</span>
+                </div>
             </div>
         </section>
 
-        <section class="glass-card p-4 md:p-8 animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                <div>
-                    <h3 class="text-2xl font-bold">Tendencias Históricas</h3>
-                    <p class="text-slate-400 text-sm" id="history-subtitle">Cargando fecha de inicio...</p>
+        <!-- =====================================================================
+             SECCIÓN 2: NUEVO MÓDULO ESPACIAL GY-9250 (BRÚJULA + INCLINACIÓN)
+             ===================================================================== -->
+        <section id="sec-orientacion" class="grid grid-cols-1 lg:grid-cols-2 gap-6 animate__animated animate__fadeInUp">
+            <!-- Card 1: Brújula Magnética y Rumbo -->
+            <div class="spatial-card p-6 md:p-7 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Magnetómetro AK8963 • GY-9250</span>
+                        <h3 class="text-xl font-bold text-white mt-0.5">Brújula Espacial y Rumbo</h3>
+                    </div>
+                    <span id="cardinal-badge" class="neo-pill-badge px-4 py-1.5 rounded-full text-xs font-extrabold tracking-widest text-emerald-300 uppercase">
+                        ---
+                    </span>
                 </div>
-                <div class="flex flex-col items-end gap-2 w-full md:w-auto">
-                    <div class="flex items-center gap-2">
-                        <label for="history-date" class="text-xs text-slate-400 font-semibold uppercase">Fecha:</label>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center my-auto py-2">
+                    <!-- Dial Espacial SVG de Brújula -->
+                    <div class="flex items-center justify-center">
+                        <div class="relative w-48 h-48 rounded-full neo-inset flex items-center justify-center p-3">
+                            <svg viewBox="0 0 200 200" class="w-full h-full">
+                                <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2" />
+                                <circle cx="100" cy="100" r="72" fill="none" stroke="rgba(52,211,153,0.18)" stroke-width="1" stroke-dasharray="4 4" />
+                                <!-- Puntos Cardinales -->
+                                <text x="100" y="24" text-anchor="middle" fill="#34d399" font-size="13" font-weight="800">N</text>
+                                <text x="180" y="104" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">E</text>
+                                <text x="100" y="186" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">S</text>
+                                <text x="20" y="104" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="700">O</text>
+                                <!-- Aguja Rotatoria -->
+                                <g id="compass-needle" class="compass-needle" style="transform: rotate(0deg);">
+                                    <!-- Punta Norte -->
+                                    <polygon points="100,28 93,100 107,100" fill="#10b981" />
+                                    <!-- Punta Sur -->
+                                    <polygon points="100,172 93,100 107,100" fill="rgba(148,163,184,0.35)" />
+                                    <circle cx="100" cy="100" r="7" fill="#0f172a" stroke="#34d399" stroke-width="3" />
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Lectura Digital de Rumbo -->
+                    <div class="flex flex-col justify-center space-y-4 text-center sm:text-left">
+                        <div class="neo-inset p-4 rounded-2xl">
+                            <p class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Acimut Magnético</p>
+                            <div class="flex items-baseline justify-center sm:justify-start gap-2 mt-1">
+                                <span id="rumbo-val" class="text-5xl font-black text-white font-mono-num">---°</span>
+                                <span id="rumbo-cardinal-inline" class="text-lg font-bold text-emerald-400">SIN DATOS</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Orientación física del cabezal de sensores en el predio para referenciar corredores de viento predominantes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Nivelación e Inclinación X / Y (Pitch & Roll) -->
+            <div class="spatial-card p-6 md:p-7 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-sky-400">Acelerómetro 3 Ejes • GY-9250</span>
+                        <h3 class="text-xl font-bold text-white mt-0.5">Nivelación del Mástil (Pitch & Roll)</h3>
+                    </div>
+                    <span id="level-status-badge" class="neo-pill-badge px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-300">
+                        Verificando...
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center my-auto py-2">
+                    <!-- Horizonte / Burbuja Espacial 2D -->
+                    <div class="flex items-center justify-center">
+                        <div class="relative w-48 h-48 rounded-full neo-inset flex items-center justify-center overflow-hidden">
+                            <!-- Retícula de nivel -->
+                            <div class="absolute inset-4 rounded-full border border-slate-700/60"></div>
+                            <div class="absolute inset-12 rounded-full border border-dashed border-sky-400/30"></div>
+                            <div class="absolute w-full h-[1px] bg-slate-700/60"></div>
+                            <div class="absolute h-full w-[1px] bg-slate-700/60"></div>
+                            <!-- Burbuja móvil -->
+                            <div id="level-bubble"
+                                class="level-bubble w-7 h-7 rounded-full bg-emerald-400/90 border-2 border-white shadow-[0_0_18px_#10b981]"
+                                style="transform: translate(0px, 0px);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Barras y Grados Eje X / Eje Y -->
+                    <div class="space-y-4">
+                        <div class="neo-inset p-3.5 rounded-2xl">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs font-semibold text-slate-300">Inclinación X (Pitch)</span>
+                                <span id="pitch-val" class="text-lg font-black text-sky-400 font-mono-num">--°</span>
+                            </div>
+                            <div class="w-full bg-slate-900/90 rounded-full h-2 overflow-hidden relative">
+                                <div id="pitch-bar" class="bg-sky-400 h-full rounded-full transition-all duration-500" style="width: 50%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="neo-inset p-3.5 rounded-2xl">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs font-semibold text-slate-300">Inclinación Y (Roll)</span>
+                                <span id="roll-val" class="text-lg font-black text-indigo-400 font-mono-num">--°</span>
+                            </div>
+                            <div class="w-full bg-slate-900/90 rounded-full h-2 overflow-hidden relative">
+                                <div id="roll-bar" class="bg-indigo-400 h-full rounded-full transition-all duration-500" style="width: 50%;"></div>
+                            </div>
+                        </div>
+
+                        <p class="text-[11px] text-slate-400 leading-relaxed">
+                            Un aplome cercano a <span class="text-slate-200 font-semibold">0° en X e Y</span> garantiza mediciones exactas en el anemómetro de cazoletas y el escudo solar.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================================
+             SECCIÓN 3: TENDENCIAS HISTÓRICAS CON GLASSY TABS V7
+             ===================================================================== -->
+        <section id="sec-historial" class="spatial-card p-5 md:p-8 animate__animated animate__fadeInUp">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-sky-400">Serie Temporal de Predio</span>
+                    <h3 class="text-2xl font-bold text-white">Tendencias Históricas</h3>
+                    <p class="text-slate-400 text-xs mt-0.5" id="history-subtitle">Cargando fecha de inicio...</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto justify-end">
+                    <div class="neo-inset px-3.5 py-2 rounded-full flex items-center gap-2">
+                        <label for="history-date" class="text-[11px] text-slate-400 font-semibold uppercase">Fecha:</label>
                         <input type="date" id="history-date"
-                            class="px-2 py-1 rounded-md bg-slate-800 text-xs text-white border border-slate-700 outline-none focus:border-sky-500"
+                            class="bg-transparent text-xs text-white font-mono-num outline-none cursor-pointer"
                             onchange="updateHistory(currentHistoryField)">
                     </div>
-                    <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                        <button onclick="updateHistory('temperatura')"
-                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
-                            id="btn-temperatura">TEMP</button>
-                        <button onclick="updateHistory('humedad')"
-                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
-                            id="btn-humedad">HUM</button>
-                        <button onclick="updateHistory('presion')"
-                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
-                            id="btn-presion">PRESIÓN</button>
-                        <button onclick="updateHistory('velocidad_viento')"
-                            class="px-3 md:px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] md:text-xs font-bold transition-all border border-slate-700 focus:bg-slate-600 flex-1 md:flex-none"
-                            id="btn-velocidad_viento">VIENTO</button>
+
+                    <!-- Selector Glassy Navigation Tabs V7 para variables históricas -->
+                    <div class="glass-tabs-track" id="history-tabs-track">
+                        <div class="glass-tab-pill" id="history-tabs-pill"></div>
+                        <button type="button" id="btn-temperatura" class="glass-tab-btn active"
+                            onclick="selectHistoryTab('temperatura', this)">Temp</button>
+                        <button type="button" id="btn-humedad" class="glass-tab-btn"
+                            onclick="selectHistoryTab('humedad', this)">Humedad</button>
+                        <button type="button" id="btn-presion" class="glass-tab-btn"
+                            onclick="selectHistoryTab('presion', this)">Presión</button>
+                        <button type="button" id="btn-velocidad_viento" class="glass-tab-btn"
+                            onclick="selectHistoryTab('velocidad_viento', this)">Viento</button>
+                        <button type="button" id="btn-rumbo" class="glass-tab-btn"
+                            onclick="selectHistoryTab('rumbo', this)">Rumbo</button>
                     </div>
                 </div>
             </div>
-            <div id="history-chart" class="w-full h-[300px] md:h-[400px]"></div>
+
+            <div class="neo-inset p-3 md:p-5 rounded-3xl">
+                <div id="history-chart" class="w-full h-[320px] md:h-[400px]"></div>
+            </div>
         </section>
 
-        <!-- Nueva Sección de Pronóstico -->
-        <section class="animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
-            <div class="mb-6">
-                <h3 class="text-2xl font-bold">Pronóstico del Tiempo</h3>
-                <p class="text-slate-400 text-sm">Próximos 4 días basándose en tendencias locales</p>
+        <!-- =====================================================================
+             SECCIÓN 4: PRONÓSTICO DEL TIEMPO LOCAL
+             ===================================================================== -->
+        <section id="sec-pronostico" class="animate__animated animate__fadeInUp">
+            <div class="mb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-violet-400">Estimación Predictiva Local</span>
+                    <h3 class="text-2xl font-bold text-white">Pronóstico del Microclima</h3>
+                    <p class="text-slate-400 text-xs">Próximos 4 días basándose en series históricas de la estación</p>
+                </div>
             </div>
-            <div id="forecast-container" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <!-- Se llenará dinámicamente -->
-                <div class="glass-card p-6 flex flex-col items-center justify-center animate-pulse">
-                    <div class="h-4 w-20 bg-slate-700 rounded mb-4"></div>
-                    <div class="h-8 w-16 bg-slate-700 rounded mb-2"></div>
-                    <div class="h-4 w-12 bg-slate-700 rounded"></div>
+            <div id="forecast-container" class="grid grid-cols-2 md:grid-cols-4 gap-5">
+                <div class="spatial-card p-6 flex flex-col items-center justify-center animate-pulse min-h-[160px]">
+                    <div class="h-4 w-20 bg-slate-700/70 rounded mb-4"></div>
+                    <div class="h-8 w-16 bg-slate-700/70 rounded mb-2"></div>
+                    <div class="h-4 w-12 bg-slate-700/70 rounded"></div>
                 </div>
-                <div class="glass-card p-6 flex flex-col items-center justify-center animate-pulse">
-                    <div class="h-4 w-20 bg-slate-700 rounded mb-4"></div>
-                    <div class="h-8 w-16 bg-slate-700 rounded mb-2"></div>
-                    <div class="h-4 w-12 bg-slate-700 rounded"></div>
+                <div class="spatial-card p-6 flex flex-col items-center justify-center animate-pulse min-h-[160px]">
+                    <div class="h-4 w-20 bg-slate-700/70 rounded mb-4"></div>
+                    <div class="h-8 w-16 bg-slate-700/70 rounded mb-2"></div>
+                    <div class="h-4 w-12 bg-slate-700/70 rounded"></div>
                 </div>
-                <div class="glass-card p-6 flex flex-col items-center justify-center animate-pulse hidden md:flex">
-                    <div class="h-4 w-20 bg-slate-700 rounded mb-4"></div>
-                    <div class="h-8 w-16 bg-slate-700 rounded mb-2"></div>
-                    <div class="h-4 w-12 bg-slate-700 rounded"></div>
+                <div class="spatial-card p-6 flex flex-col items-center justify-center animate-pulse hidden md:flex min-h-[160px]">
+                    <div class="h-4 w-20 bg-slate-700/70 rounded mb-4"></div>
+                    <div class="h-8 w-16 bg-slate-700/70 rounded mb-2"></div>
+                    <div class="h-4 w-12 bg-slate-700/70 rounded"></div>
                 </div>
-                <div class="glass-card p-6 flex flex-col items-center justify-center animate-pulse hidden md:flex">
-                    <div class="h-4 w-20 bg-slate-700 rounded mb-4"></div>
-                    <div class="h-8 w-16 bg-slate-700 rounded mb-2"></div>
-                    <div class="h-4 w-12 bg-slate-700 rounded"></div>
+                <div class="spatial-card p-6 flex flex-col items-center justify-center animate-pulse hidden md:flex min-h-[160px]">
+                    <div class="h-4 w-20 bg-slate-700/70 rounded mb-4"></div>
+                    <div class="h-8 w-16 bg-slate-700/70 rounded mb-2"></div>
+                    <div class="h-4 w-12 bg-slate-700/70 rounded"></div>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="text-center py-12 text-slate-500 text-xs font-light tracking-[0.2em] uppercase">
-        Liceo de Excelencia Polivalente San Nicolás • <span id="current-year">2026</span> • © 3F GeoGo
+    <footer class="text-center py-12 text-slate-500 text-xs font-medium tracking-[0.18em] uppercase">
+        Liceo Bicentenario de Excelencia Polivalente San Nicolás • <span id="current-year">2026</span> • Construido por GeoGo (Área Premilitar)
     </footer>
 
     <script>
         document.getElementById('current-year').textContent = new Date().getFullYear();
 
-        // CONFIGURACIÓN DE DATA
+        // =========================================================================
+        // MOTOR DE ANIMACIÓN GLASSY NAVIGATION TABS V7 (Píldora deslizante)
+        // =========================================================================
+        function moveGlassPill(trackId, pillId, activeBtn) {
+            const track = document.getElementById(trackId);
+            const pill = document.getElementById(pillId);
+            if (!track || !pill || !activeBtn) return;
+
+            const trackRect = track.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+            const offsetLeft = (btnRect.left - trackRect.left) + track.scrollLeft;
+
+            pill.style.width = `${btnRect.width}px`;
+            pill.style.transform = `translateX(${offsetLeft}px)`;
+        }
+
+        function initAllGlassTabs() {
+            const mainActive = document.querySelector('#main-nav-track .glass-tab-btn.active');
+            if (mainActive) moveGlassPill('main-nav-track', 'main-nav-pill', mainActive);
+
+            const histActive = document.querySelector('#history-tabs-track .glass-tab-btn.active');
+            if (histActive) moveGlassPill('history-tabs-track', 'history-tabs-pill', histActive);
+        }
+
+        function switchMainView(view, btnEl) {
+            document.querySelectorAll('#main-nav-track .glass-tab-btn').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            moveGlassPill('main-nav-track', 'main-nav-pill', btnEl);
+
+            const sections = {
+                agro: document.getElementById('sec-agro'),
+                clima: document.getElementById('sec-clima'),
+                orientacion: document.getElementById('sec-orientacion'),
+                historial: document.getElementById('sec-historial'),
+                pronostico: document.getElementById('sec-pronostico')
+            };
+
+            Object.entries(sections).forEach(([key, el]) => {
+                if (!el) return;
+                if (view === 'all' || view === key || (view === 'clima' && key === 'agro')) {
+                    el.style.display = '';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            setTimeout(() => {
+                windGauge.resize();
+                historyChart.resize();
+                initAllGlassTabs();
+            }, 60);
+        }
+
+        function selectHistoryTab(campo, btnEl) {
+            document.querySelectorAll('#history-tabs-track .glass-tab-btn').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            moveGlassPill('history-tabs-track', 'history-tabs-pill', btnEl);
+            updateHistory(campo);
+        }
+
+        window.addEventListener('load', () => setTimeout(initAllGlassTabs, 80));
+
+        // =========================================================================
+        // CONFIGURACIÓN ARCGIS ONLINE
+        // =========================================================================
         const ARCGIS_URL = "https://services4.arcgis.com/RZghiOOKLo2VeJGO/arcgis/rest/services/Estacion_Metereologica/FeatureServer/0/query";
         const FORECAST_URL = "https://services4.arcgis.com/RZghiOOKLo2VeJGO/arcgis/rest/services/Pronostico_estacion_metereologica/FeatureServer/0/query";
 
-        // Inicializar Gráficos
         const windGauge = echarts.init(document.getElementById('gauge-wind'), 'dark');
         const historyChart = echarts.init(document.getElementById('history-chart'), 'dark');
 
-        // Variables Globales Lógica
         let lastDataTime = 0;
-        let lastReportedTimestamp = 0;
-        let isOffline = false;
-        const OFFLINE_THRESHOLD_MS = 25000; // 25 segundos
-        const GAP_THRESHOLD_MS = 120000; // 2 minutos máximo entre puntos
+        const OFFLINE_THRESHOLD_MS = 25000;
+        const GAP_THRESHOLD_MS = 120000;
 
         // Cálculo Punto de Rocío (Fórmula Magnus)
         function calculateDewPoint(temp, hum) {
-            if (temp == null || hum == null || hum === 0) return "--";
+            if (temp == null || hum == null || hum <= 0) return "--";
             const a = 17.625;
             const b = 243.04;
             const alpha = Math.log(hum / 100) + (a * temp) / (b + temp);
-            const dewPoint = (b * alpha) / (a - alpha);
-            return dewPoint.toFixed(1);
+            return ((b * alpha) / (a - alpha)).toFixed(1);
+        }
+
+        // Respaldo de punto cardinal si solo viene el ángulo
+        function getCardinalFromDegrees(deg) {
+            if (deg == null || isNaN(deg) || deg < 0) return "SIN DATOS";
+            const d = ((deg % 360) + 360) % 360;
+            if (d >= 338 || d < 23) return "NORTE";
+            if (d >= 23 && d < 68) return "NE";
+            if (d >= 68 && d < 113) return "ESTE";
+            if (d >= 113 && d < 158) return "SE";
+            if (d >= 158 && d < 203) return "SUR";
+            if (d >= 203 && d < 248) return "SO";
+            if (d >= 248 && d < 293) return "OESTE";
+            return "NO";
         }
 
         function updateStatusUI() {
-            if (lastDataTime === 0) return; // Aún no llega el primer dato
+            if (lastDataTime === 0) return;
 
             const now = Date.now();
             const dot = document.getElementById('live-dot');
             const text = document.getElementById('status-text');
 
-            // Diferencia entre la hora del PC y la hora del DATO (en ms)
             if (now - lastDataTime > OFFLINE_THRESHOLD_MS) {
-                isOffline = true;
-                dot.style.backgroundColor = '#ef4444'; // Red
-                dot.style.boxShadow = '0 0 10px #ef4444';
+                dot.style.backgroundColor = '#ef4444';
+                dot.style.boxShadow = '0 0 12px #ef4444';
                 dot.style.animation = 'none';
-                text.textContent = 'OFFLINE';
-                text.className = "text-red-400 font-semibold tracking-widest";
+                text.textContent = 'ESTACIÓN OFFLINE';
+                text.className = "text-red-400 text-xs font-bold tracking-widest uppercase";
             } else {
-                isOffline = false;
-                dot.style.backgroundColor = '#10b981'; // Green
-                dot.style.boxShadow = '0 0 10px #10b981';
+                dot.style.backgroundColor = '#10b981';
+                dot.style.boxShadow = '0 0 12px #10b981';
                 dot.style.animation = 'pulse 2s infinite';
                 text.textContent = 'SISTEMA EN VIVO';
-                text.className = "text-emerald-400 font-semibold tracking-widest";
+                text.className = "text-emerald-400 text-xs font-bold tracking-widest uppercase";
             }
         }
-
-        // Chequeo de conexión Offline constante
         setInterval(updateStatusUI, 1000);
 
-        // Fetch First Date
+        // Fecha inicial de registros
         async function fetchFirstDate() {
             try {
                 const params = "?where=1%3D1&outFields=fecha_lectura&orderByFields=fecha_lectura+ASC&resultRecordCount=1&f=pjson";
@@ -263,7 +701,8 @@
                     const timestamp = data.features[0].attributes.fecha_lectura;
                     const dateObj = new Date(timestamp);
                     const options = { day: 'numeric', month: 'long', year: 'numeric' };
-                    document.getElementById('history-subtitle').textContent = `Registros almacenados desde ${dateObj.toLocaleDateString('es-ES', options)}`;
+                    document.getElementById('history-subtitle').textContent =
+                        `Registros almacenados desde ${dateObj.toLocaleDateString('es-ES', options)}`;
                 } else {
                     document.getElementById('history-subtitle').textContent = "Sin registros históricos";
                 }
@@ -273,7 +712,141 @@
         }
         fetchFirstDate();
 
-        // Función para obtener datos en tiempo real
+        // Actualizar Diagnóstico Agrícola
+        function updateAgroInsights(latest) {
+            const t = latest.temperatura;
+            const v = latest.velocidad_viento;
+            const px = latest.inclinacion_x;
+            const py = latest.inclinacion_y;
+
+            const frostText = document.getElementById('agro-frost-text');
+            const frostIcon = document.getElementById('agro-frost-icon');
+            if (t != null && !isNaN(t)) {
+                if (t <= 2.5) {
+                    frostIcon.textContent = '❄️';
+                    frostText.textContent = `Alerta de Helada (${t.toFixed(1)}°C) — Proteger cultivo`;
+                    frostText.className = 'text-sm font-bold text-sky-300';
+                } else if (t <= 6.0) {
+                    frostIcon.textContent = '⚠️';
+                    frostText.textContent = `Frío Intenso (${t.toFixed(1)}°C) — Vigilar inversión térmica`;
+                    frostText.className = 'text-sm font-bold text-amber-300';
+                } else if (t >= 32.0) {
+                    frostIcon.textContent = '🔥';
+                    frostText.textContent = `Estrés Térmico (${t.toFixed(1)}°C) — Reforzar riego`;
+                    frostText.className = 'text-sm font-bold text-orange-400';
+                } else {
+                    frostIcon.textContent = '🌱';
+                    frostText.textContent = `Óptimo para cultivo (${t.toFixed(1)}°C sin riesgo de helada)`;
+                    frostText.className = 'text-sm font-bold text-emerald-300';
+                }
+            }
+
+            const sprayText = document.getElementById('agro-spray-text');
+            if (v != null && !isNaN(v)) {
+                if (v < 12) {
+                    sprayText.textContent = `Óptimo para aplicar/pulverizar (${v.toFixed(1)} km/h, baja deriva)`;
+                    sprayText.className = 'text-sm font-bold text-emerald-300';
+                } else if (v <= 20) {
+                    sprayText.textContent = `Viento Moderado (${v.toFixed(1)} km/h) — Precaución por deriva`;
+                    sprayText.className = 'text-sm font-bold text-amber-300';
+                } else {
+                    sprayText.textContent = `Viento Fuerte (${v.toFixed(1)} km/h) — No pulverizar`;
+                    sprayText.className = 'text-sm font-bold text-red-400';
+                }
+            }
+
+            const levelText = document.getElementById('agro-level-text');
+            if (px != null && py != null && !isNaN(px) && !isNaN(py)) {
+                const maxTilt = Math.max(Math.abs(px), Math.abs(py));
+                if (maxTilt <= 5) {
+                    levelText.textContent = `Mástil aplomado (X:${px.toFixed(0)}° Y:${py.toFixed(0)}°)`;
+                    levelText.className = 'text-sm font-bold text-emerald-300';
+                } else if (maxTilt <= 12) {
+                    levelText.textContent = `Inclinación leve (X:${px.toFixed(0)}° Y:${py.toFixed(0)}°)`;
+                    levelText.className = 'text-sm font-bold text-amber-300';
+                } else {
+                    levelText.textContent = `Desnivel detectado (X:${px.toFixed(0)}° Y:${py.toFixed(0)}°) — Nivelar trípode`;
+                    levelText.className = 'text-sm font-bold text-red-400';
+                }
+            } else {
+                levelText.textContent = 'Esperando datos del sensor GY-9250...';
+                levelText.className = 'text-sm font-bold text-slate-400';
+            }
+        }
+
+        // Actualizar UI de Orientación GY-9250
+        function updateOrientationUI(latest) {
+            const rumbo = latest.rumbo;
+            const cardinalAttr = latest.punto_cardinal;
+            const pitch = latest.inclinacion_x;
+            const roll = latest.inclinacion_y;
+
+            const needle = document.getElementById('compass-needle');
+            const rumboVal = document.getElementById('rumbo-val');
+            const cardinalBadge = document.getElementById('cardinal-badge');
+            const cardinalInline = document.getElementById('rumbo-cardinal-inline');
+
+            if (rumbo != null && !isNaN(rumbo) && rumbo >= 0) {
+                const deg = Math.round(rumbo) % 360;
+                const cardinal = (cardinalAttr && String(cardinalAttr).trim().length > 0)
+                    ? String(cardinalAttr).trim()
+                    : getCardinalFromDegrees(deg);
+
+                needle.style.transform = `rotate(${deg}deg)`;
+                rumboVal.textContent = `${String(deg).padStart(3, '0')}°`;
+                cardinalBadge.textContent = cardinal;
+                cardinalInline.textContent = cardinal;
+            } else {
+                rumboVal.textContent = `---°`;
+                cardinalBadge.textContent = `SIN MAG`;
+                cardinalInline.textContent = `SIN LECTURA`;
+            }
+
+            const pitchVal = document.getElementById('pitch-val');
+            const rollVal = document.getElementById('roll-val');
+            const pitchBar = document.getElementById('pitch-bar');
+            const rollBar = document.getElementById('roll-bar');
+            const bubble = document.getElementById('level-bubble');
+            const levelBadge = document.getElementById('level-status-badge');
+
+            if (pitch != null && roll != null && !isNaN(pitch) && !isNaN(roll)) {
+                pitchVal.textContent = `${pitch >= 0 ? '+' : ''}${pitch.toFixed(0)}°`;
+                rollVal.textContent = `${roll >= 0 ? '+' : ''}${roll.toFixed(0)}°`;
+
+                // Mapear [-45°, +45°] -> [0%, 100%]
+                const pitchPct = Math.min(100, Math.max(0, ((pitch + 45) / 90) * 100));
+                const rollPct = Math.min(100, Math.max(0, ((roll + 45) / 90) * 100));
+                pitchBar.style.width = `${pitchPct}%`;
+                rollBar.style.width = `${rollPct}%`;
+
+                // Desplazar burbuja 2D (máx 56px de radio)
+                const clamp = (v, max) => Math.max(-max, Math.min(max, v));
+                const dx = clamp((roll / 30) * 56, 56);
+                const dy = clamp((pitch / 30) * 56, 56);
+                bubble.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+
+                const maxTilt = Math.max(Math.abs(pitch), Math.abs(roll));
+                if (maxTilt <= 5) {
+                    levelBadge.textContent = 'Mástil Nivelado';
+                    levelBadge.className = 'neo-pill-badge px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-300';
+                    bubble.className = 'level-bubble w-7 h-7 rounded-full bg-emerald-400/90 border-2 border-white shadow-[0_0_18px_#10b981]';
+                } else if (maxTilt <= 12) {
+                    levelBadge.textContent = 'Inclinación Leve';
+                    levelBadge.className = 'neo-pill-badge px-3.5 py-1.5 rounded-full text-xs font-bold text-amber-300';
+                    bubble.className = 'level-bubble w-7 h-7 rounded-full bg-amber-400/90 border-2 border-white shadow-[0_0_18px_#f59e0b]';
+                } else {
+                    levelBadge.textContent = 'Revisar Aplome';
+                    levelBadge.className = 'neo-pill-badge px-3.5 py-1.5 rounded-full text-xs font-bold text-red-400';
+                    bubble.className = 'level-bubble w-7 h-7 rounded-full bg-red-500/90 border-2 border-white shadow-[0_0_18px_#ef4444]';
+                }
+            } else {
+                pitchVal.textContent = `--°`;
+                rollVal.textContent = `--°`;
+                levelBadge.textContent = 'Sin datos GY-9250';
+            }
+        }
+
+        // Obtener datos en tiempo real desde ArcGIS Online
         async function fetchRealtime() {
             const params = "?where=1%3D1&outFields=*&orderByFields=fecha_lectura+DESC&resultRecordCount=1&f=pjson";
             try {
@@ -283,20 +856,25 @@
                 if (data.features && data.features.length > 0) {
                     const latest = data.features[0].attributes;
 
-                    // Actualizar el tiempo basado en el DATO REAL de la estación (fecha_lectura)
                     lastDataTime = latest.fecha_lectura;
-                    lastReportedTimestamp = latest.fecha_lectura;
                     updateStatusUI();
 
-                    // Actualizar UI
-                    document.getElementById('temp-val').innerText = `${latest.temperatura.toFixed(1)}°C`;
-                    document.getElementById('hum-val').innerText = `${latest.humedad.toFixed(0)}%`;
-                    document.getElementById('temp-bar').style.width = `${(latest.temperatura / 50) * 100}%`;
+                    const dt = new Date(latest.fecha_lectura);
+                    document.getElementById('last-update-text').textContent =
+                        `Última lectura: ${dt.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
 
-                    // Actualizar Punto de Rocío
+                    // Temperatura y Humedad
+                    if (latest.temperatura != null) {
+                        document.getElementById('temp-val').innerText = `${latest.temperatura.toFixed(1)}°C`;
+                        const tPct = Math.min(100, Math.max(0, (latest.temperatura / 50) * 100));
+                        document.getElementById('temp-bar').style.width = `${tPct}%`;
+                    }
+                    if (latest.humedad != null) {
+                        document.getElementById('hum-val').innerText = `${latest.humedad.toFixed(0)}%`;
+                    }
                     document.getElementById('dew-val').innerText = calculateDewPoint(latest.temperatura, latest.humedad);
 
-                    // Actualizar Presión Barométrica
+                    // Presión Barométrica
                     if (latest.presion != null && !isNaN(latest.presion)) {
                         document.getElementById('press-val').innerText = `${latest.presion.toFixed(1)} hPa`;
                         const barPct = Math.min(100, Math.max(0, ((latest.presion - 960) / 80) * 100));
@@ -306,28 +884,56 @@
                         document.getElementById('press-val').innerText = `-- hPa`;
                     }
 
-                    // Actualizar Gauge Viento
-                    document.getElementById('wind-val-text').innerText = `${latest.velocidad_viento.toFixed(1)} km/h`;
+                    // Velocidad del Viento
+                    const windVal = latest.velocidad_viento != null ? latest.velocidad_viento : 0;
+                    document.getElementById('wind-val-text').innerText = `${windVal.toFixed(1)} km/h`;
+                    document.getElementById('wind-beaufort-text').innerText =
+                        windVal < 2 ? 'Calma atmosférica' :
+                        windVal < 12 ? 'Brisa ligera agrícola' :
+                        windVal < 25 ? 'Viento moderado en predio' : 'Ráfaga fuerte en terreno';
+
                     windGauge.setOption({
                         backgroundColor: 'transparent',
                         series: [{
-                            type: 'gauge', min: 0, max: 40, splitNumber: 8,
-                            axisLine: { lineStyle: { width: 6, color: [[1, 'rgba(56, 189, 248, 0.2)']] } },
+                            type: 'gauge',
+                            min: 0,
+                            max: 50,
+                            splitNumber: 5,
+                            radius: '92%',
+                            axisLine: {
+                                lineStyle: {
+                                    width: 8,
+                                    color: [
+                                        [0.24, '#34d399'],
+                                        [0.50, '#38bdf8'],
+                                        [1, '#f97316']
+                                    ]
+                                }
+                            },
+                            axisTick: { show: false },
+                            splitLine: { length: 8, lineStyle: { color: 'rgba(148,163,184,0.35)' } },
+                            axisLabel: { color: '#64748b', fontSize: 9, distance: 12 },
                             pointer: { width: 4, itemStyle: { color: '#38bdf8' } },
                             detail: { show: false },
-                            data: [{ value: latest.velocidad_viento.toFixed(1) }]
+                            data: [{ value: windVal.toFixed(1) }]
                         }]
                     });
+
+                    // Actualizar Orientación (GY-9250) y Diagnóstico Agrícola
+                    updateOrientationUI(latest);
+                    updateAgroInsights(latest);
                 }
-            } catch (e) { console.error("Error cargando tiempo real", e); }
+            } catch (e) {
+                console.error("Error cargando tiempo real", e);
+            }
         }
 
-        // Cálculo de tendencia barométrica de las últimas 3 horas
+        // Tendencia barométrica de las últimas 3 horas
         let lastTendencyCheck = 0;
         async function updatePressureTendency(currentPressure, currentTimestamp) {
             if (!currentPressure || isNaN(currentPressure)) return;
             const now = Date.now();
-            if (now - lastTendencyCheck < 30000) return; // Limitar consultas cada 30 s
+            if (now - lastTendencyCheck < 30000) return;
             lastTendencyCheck = now;
 
             try {
@@ -344,7 +950,7 @@
                     const diff = currentPressure - pastP;
                     diffEl.innerText = `${diff >= 0 ? '+' : ''}${diff.toFixed(1)}`;
                     if (diff <= -2.5) {
-                        textEl.innerText = 'Caída Rápida (Alerta)';
+                        textEl.innerText = 'Caída Rápida (Frente)';
                         textEl.className = 'text-red-400 font-semibold';
                         iconEl.innerText = '▼';
                         iconEl.className = 'text-red-400';
@@ -360,7 +966,7 @@
                         iconEl.className = 'text-emerald-400';
                     } else {
                         textEl.innerText = 'Estable';
-                        textEl.className = 'text-slate-400';
+                        textEl.className = 'text-slate-300 font-medium';
                         iconEl.innerText = '●';
                         iconEl.className = 'text-violet-400';
                     }
@@ -373,19 +979,14 @@
             }
         }
 
+        // =========================================================================
+        // HISTÓRICOS
+        // =========================================================================
         let currentHistoryField = 'temperatura';
         document.getElementById('history-date').valueAsDate = new Date();
 
-        // Función para obtener históricos
         async function updateHistory(campo) {
             currentHistoryField = campo;
-
-            ['temperatura', 'humedad', 'velocidad_viento', 'presion'].forEach(c => {
-                const btn = document.getElementById(`btn-${c}`);
-                if (btn) btn.classList.remove('bg-slate-600', 'border-sky-500');
-            });
-            const activeBtn = document.getElementById(`btn-${campo}`);
-            if (activeBtn) activeBtn.classList.add('bg-slate-600', 'border-sky-500');
 
             const dateInput = document.getElementById('history-date').value;
             let dateFilter = "1=1";
@@ -398,6 +999,7 @@
             }
 
             const params = `?where=${encodeURIComponent(dateFilter)}&outFields=fecha_lectura,${campo}&orderByFields=fecha_lectura+ASC&f=pjson`;
+
             try {
                 const response = await fetch(ARCGIS_URL + params);
                 const data = await response.json();
@@ -405,83 +1007,98 @@
                 if (!data.features || data.features.length === 0) {
                     historyChart.clear();
                     historyChart.setOption({
-                        title: { text: "No hay datos para esta fecha", textStyle: { color: "#94a3b8", fontSize: 14, fontWeight: "normal" }, left: "center", top: "center" }
+                        title: {
+                            text: "No hay registros almacenados para esta fecha",
+                            textStyle: { color: "#94a3b8", fontSize: 14, fontWeight: "normal" },
+                            left: "center",
+                            top: "center"
+                        }
                     });
                     return;
                 }
 
                 let processedData = [];
-                let features = data.features;
+                const features = data.features;
 
                 for (let i = 0; i < features.length; i++) {
-                    let currentTimestamp = features[i].attributes.fecha_lectura;
-                    let currentValue = features[i].attributes[campo] || 0;
+                    const currentTimestamp = features[i].attributes.fecha_lectura;
+                    const rawVal = features[i].attributes[campo];
+                    if (rawVal == null || isNaN(rawVal)) continue;
 
-                    // Agregar dato a cero entre medias si hay mucho espacio (falso point)
                     if (i > 0) {
-                        let prevTimestamp = features[i - 1].attributes.fecha_lectura;
+                        const prevTimestamp = features[i - 1].attributes.fecha_lectura;
                         if (currentTimestamp - prevTimestamp > GAP_THRESHOLD_MS) {
-                            processedData.push([new Date(prevTimestamp + 1000), 0]);
-                            processedData.push([new Date(currentTimestamp - 1000), 0]);
+                            processedData.push([new Date(prevTimestamp + 1000), null]);
                         }
                     }
-                    processedData.push([new Date(currentTimestamp), currentValue]);
+                    processedData.push([new Date(currentTimestamp), rawVal]);
                 }
 
-                let lineColor, areaColorInfo;
-                if (campo === 'temperatura') { lineColor = '#f97316'; areaColorInfo = '#f97316'; }
-                else if (campo === 'humedad') { lineColor = '#38bdf8'; areaColorInfo = '#38bdf8'; }
-                else if (campo === 'presion') { lineColor = '#a855f7'; areaColorInfo = '#a855f7'; }
-                else { lineColor = '#10b981'; areaColorInfo = '#10b981'; }
-
-                const unit = campo === 'temperatura' ? '°C' : campo === 'humedad' ? '%' : campo === 'presion' ? 'hPa' : 'km/h';
+                const palette = {
+                    temperatura: { line: '#fb923c', area: 'rgba(251, 146, 60, 0.35)', unit: '°C' },
+                    humedad: { line: '#38bdf8', area: 'rgba(56, 189, 248, 0.35)', unit: '%' },
+                    presion: { line: '#a78bfa', area: 'rgba(167, 139, 250, 0.35)', unit: 'hPa' },
+                    velocidad_viento: { line: '#2dd4bf', area: 'rgba(45, 212, 191, 0.35)', unit: 'km/h' },
+                    rumbo: { line: '#34d399', area: 'rgba(52, 211, 153, 0.30)', unit: '°' }
+                };
+                const cfg = palette[campo] || palette.temperatura;
 
                 historyChart.setOption({
                     title: { show: false },
                     backgroundColor: 'transparent',
                     tooltip: {
                         trigger: 'axis',
+                        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                        borderColor: 'rgba(255, 255, 255, 0.14)',
+                        textStyle: { color: '#f8fafc' },
                         formatter: function (params) {
-                            let dt = params[0].value[0];
-                            let val = params[0].value[1];
-                            let timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                            return `${timeStr}<br/><b>${val} ${unit}</b>`;
+                            if (!params || !params[0] || params[0].value[1] == null) return '';
+                            const dt = params[0].value[0];
+                            const val = Number(params[0].value[1]).toFixed(1);
+                            const timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                            return `${timeStr}<br/><b>${val} ${cfg.unit}</b>`;
                         }
                     },
-                    grid: { containLabel: true, left: '5%', right: '5%', bottom: '15%' },
+                    grid: { containLabel: true, left: '4%', right: '4%', top: '10%', bottom: '16%' },
                     dataZoom: [
                         { type: 'inside', start: 0, end: 100 },
-                        { type: 'slider', show: true, bottom: 0, textStyle: { color: '#94a3b8' } }
+                        { type: 'slider', show: true, bottom: 4, borderColor: 'rgba(255,255,255,0.08)', textStyle: { color: '#94a3b8' } }
                     ],
                     xAxis: {
                         type: 'time',
-                        axisLine: { lineStyle: { color: '#475569' } }
+                        axisLine: { lineStyle: { color: '#334155' } },
+                        axisLabel: { color: '#94a3b8' }
                     },
                     yAxis: {
                         type: 'value',
-                        splitLine: { lineStyle: { color: '#1e293b' } },
-                        name: unit,
+                        splitLine: { lineStyle: { color: 'rgba(51, 65, 85, 0.45)' } },
+                        axisLabel: { color: '#94a3b8' },
+                        name: cfg.unit,
                         scale: true
                     },
                     series: [{
                         data: processedData,
                         type: 'line',
-                        connectNulls: true,
+                        connectNulls: false,
                         showSymbol: false,
                         smooth: true,
                         areaStyle: {
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                                { offset: 0, color: areaColorInfo },
-                                { offset: 1, color: 'transparent' }
+                                { offset: 0, color: cfg.area },
+                                { offset: 1, color: 'rgba(15, 23, 42, 0.0)' }
                             ])
                         },
-                        lineStyle: { width: 3, color: lineColor }
+                        lineStyle: { width: 3, color: cfg.line }
                     }]
                 }, true);
-            } catch (e) { console.error("Error cargando históricos", e); }
+            } catch (e) {
+                console.error("Error cargando históricos", e);
+            }
         }
 
-        // Función para obtener pronóstico
+        // =========================================================================
+        // PRONÓSTICO (4 DÍAS)
+        // =========================================================================
         async function fetchForecast() {
             const params = "?where=1%3D1&outFields=fecha,tempmax,tempmin&orderByFields=fecha+ASC&f=pjson";
             try {
@@ -489,13 +1106,12 @@
                 const data = await response.json();
 
                 if (data.error) {
-                    console.error("ArcGIS Error:", data.error);
                     let msg = "Error en el servicio de pronóstico.";
                     if (data.error.code === 499 || data.error.code === 403) {
-                        msg = "Error de permisos: El servicio de pronóstico no es público.";
+                        msg = "El servicio de pronóstico requiere permisos públicos en ArcGIS.";
                     }
                     document.getElementById('forecast-container').innerHTML = `
-                        <div class="col-span-full py-12 text-center text-red-400 font-semibold italic">
+                        <div class="col-span-full spatial-card py-10 text-center text-amber-300 font-medium text-sm">
                             ${msg}
                         </div>
                     `;
@@ -506,18 +1122,13 @@
                     renderForecast(data.features);
                 } else {
                     document.getElementById('forecast-container').innerHTML = `
-                        <div class="col-span-full py-12 text-center text-slate-500 italic">
+                        <div class="col-span-full spatial-card py-10 text-center text-slate-400 text-sm">
                             No hay datos de pronóstico disponibles actualmente.
                         </div>
                     `;
                 }
             } catch (e) {
                 console.error("Error cargando pronóstico", e);
-                document.getElementById('forecast-container').innerHTML = `
-                    <div class="col-span-full py-12 text-center text-red-500/50 italic">
-                        Error de conexión con el servicio de pronóstico.
-                    </div>
-                `;
             }
         }
 
@@ -530,34 +1141,30 @@
             features.slice(0, 4).forEach((feat, index) => {
                 const attr = feat.attributes;
                 const date = new Date(attr.fecha);
-
-                // Ajustar para evitar problemas de zona horaria en la visualización del día
                 const dayName = index === 0 ? "Hoy" : diasSemana[date.getDay()];
                 const dayOfMonth = date.getDate();
                 const monthName = date.toLocaleString('es-ES', { month: 'short' }).replace('.', '');
 
                 const card = document.createElement('div');
-                card.className = "glass-card p-6 flex flex-col items-center justify-center animate__animated animate__fadeIn";
-                card.style.animationDelay = `${index * 0.1}s`;
+                card.className = "spatial-card p-6 flex flex-col items-center justify-between animate__animated animate__fadeIn";
+                card.style.animationDelay = `${index * 0.08}s`;
 
                 card.innerHTML = `
-                    <p class="text-slate-400 font-bold text-xs uppercase tracking-widest mb-1">${dayName}</p>
-                    <p class="text-slate-500 text-[10px] mb-4">${dayOfMonth} ${monthName}</p>
                     <div class="text-center">
-                        <span class="text-3xl font-black text-orange-500">${attr.tempmax.toFixed(0)}°</span>
-                        <span class="text-xl font-bold text-sky-400/80 ml-1">${attr.tempmin.toFixed(0)}°</span>
+                        <p class="text-slate-200 font-bold text-xs uppercase tracking-widest">${dayName}</p>
+                        <p class="text-slate-500 text-[11px] font-mono-num mt-0.5">${dayOfMonth} ${monthName}</p>
                     </div>
-                    <div class="mt-4 flex gap-1">
-                        <div class="w-1 h-1 rounded-full bg-slate-700"></div>
-                        <div class="w-1 h-1 rounded-full bg-slate-700"></div>
-                        <div class="w-1 h-1 rounded-full bg-slate-700"></div>
+                    <div class="my-5 neo-inset px-5 py-3 rounded-2xl flex items-baseline gap-2.5">
+                        <span class="text-3xl font-black text-orange-400 font-mono-num">${attr.tempmax.toFixed(0)}°</span>
+                        <span class="text-lg font-bold text-sky-400/85 font-mono-num">${attr.tempmin.toFixed(0)}°</span>
                     </div>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Máx / Mín estimada</span>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Ciclo de actualización
+        // Ciclo principal
         setInterval(fetchRealtime, 2000);
         fetchRealtime();
         updateHistory('temperatura');
@@ -566,6 +1173,7 @@
         window.addEventListener('resize', () => {
             windGauge.resize();
             historyChart.resize();
+            initAllGlassTabs();
         });
     </script>
 </body>
